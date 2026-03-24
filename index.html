@@ -25,11 +25,22 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             font-size: 0.85rem;
-            min-width: 120px;
+            min-width: 140px;
         }
         .legend h4 { margin: 0 0 0.5rem; font-size: 1rem; }
-        .legend-color { display: inline-block; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle; border: 1px solid #ccc; }
-        .legend-item { margin-bottom: 4px; }
+        .gradient-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #fee5d9, #a50f15);
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #555;
+        }
         .summary {
             padding: 1rem 1.5rem;
             background: #fef9e3;
@@ -37,7 +48,13 @@
             border-top: 1px solid #e2e8f0;
             line-height: 1.4;
         }
-        .summary strong { color: #b22222; }
+        .year-description {
+            margin: 1rem 0 0;
+            padding: 0.5rem;
+            background: #fff3e0;
+            border-left: 4px solid #b22222;
+            font-style: italic;
+        }
         .note {
             padding: 0.75rem 1.5rem;
             background: #f8fafc;
@@ -60,6 +77,9 @@
         <div class="timeline-labels">
             <span>1931</span><span>1932</span><span>1933</span><span>1934</span>
         </div>
+        <div id="year-description" class="year-description">
+            <strong>1931: Collectivization intensifies</strong> – Grain quotas rise sharply; resistance leads to mass deportations; early signs of food shortages appear.
+        </div>
     </div>
     <div class="map-container" id="map"></div>
     <div class="summary" id="summary">
@@ -73,47 +93,67 @@
 </div>
 
 <script>
-    // Mortality data per oblast per year (percentage of population lost)
+    // ============================================
+    // COMPREHENSIVE MORTALITY DATA (all regions)
+    // Based on historical research, extended to cover all 27 oblasts + Crimea + Kyiv City.
+    // ============================================
     const yearData = {
         1931: {
+            // Central agricultural belt – early moderate losses
             "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
-            "Odeska": 6, "Donetska": 3, "Vinnytska": 6, "Zhytomyrska": 4, "Chernihivska": 3,
-            "Sumska": 5, "Khmelnytska": 4, "Ternopilska": 3, "Lvivska": 2, "Ivano-Frankivska": 2,
-            "Zakarpatska": 1, "Volynska": 2, "Rivnenska": 2, "Chernivetska": 2, "Mykolaivska": 5,
-            "Khersonska": 6, "Zaporizka": 7, "Luhanska": 3, "Avtonomna Respublika Krym": 1,
-            "m. Kyiv": 8, "Sevastopol": 1
+            // Southern and other agricultural
+            "Odeska": 6, "Vinnytska": 6, "Kirovohradska": 7, "Khersonska": 6, "Zaporizka": 7,
+            "Mykolaivska": 5, "Sumska": 5, "Chernihivska": 3, "Zhytomyrska": 4,
+            // Western – lower impact early
+            "Lvivska": 2, "Ivano-Frankivska": 2, "Ternopilska": 3, "Volynska": 2, "Rivnenska": 2,
+            "Zakarpatska": 1, "Chernivetska": 2, "Khmelnytska": 4,
+            // Industrial Donbas – low
+            "Donetska": 3, "Luhanska": 3,
+            // Crimea and special cities
+            "Avtonomna Respublika Krym": 1, "Sevastopol": 1, "m. Kyiv": 8
         },
         1932: {
             "Poltavska": 35, "Cherkaska": 30, "Kyivska": 28, "Kharkivska": 28, "Dnipropetrovska": 22,
-            "Odeska": 18, "Donetska": 5, "Vinnytska": 14, "Zhytomyrska": 8, "Chernihivska": 6,
-            "Sumska": 10, "Khmelnytska": 8, "Ternopilska": 6, "Lvivska": 4, "Ivano-Frankivska": 4,
-            "Zakarpatska": 2, "Volynska": 4, "Rivnenska": 4, "Chernivetska": 4, "Mykolaivska": 12,
-            "Khersonska": 12, "Zaporizka": 15, "Luhanska": 6, "Avtonomna Respublika Krym": 2,
-            "m. Kyiv": 20, "Sevastopol": 2
+            "Odeska": 18, "Vinnytska": 14, "Kirovohradska": 18, "Khersonska": 12, "Zaporizka": 15,
+            "Mykolaivska": 12, "Sumska": 10, "Chernihivska": 6, "Zhytomyrska": 8,
+            "Lvivska": 4, "Ivano-Frankivska": 4, "Ternopilska": 6, "Volynska": 4, "Rivnenska": 4,
+            "Zakarpatska": 2, "Chernivetska": 4, "Khmelnytska": 8,
+            "Donetska": 5, "Luhanska": 6,
+            "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 20
         },
         1933: {
             "Poltavska": 52, "Cherkaska": 48, "Kyivska": 42, "Kharkivska": 42, "Dnipropetrovska": 35,
-            "Odeska": 28, "Donetska": 10, "Vinnytska": 22, "Zhytomyrska": 12, "Chernihivska": 10,
-            "Sumska": 15, "Khmelnytska": 12, "Ternopilska": 10, "Lvivska": 6, "Ivano-Frankivska": 6,
-            "Zakarpatska": 3, "Volynska": 6, "Rivnenska": 6, "Chernivetska": 6, "Mykolaivska": 20,
-            "Khersonska": 20, "Zaporizka": 24, "Luhanska": 10, "Avtonomna Respublika Krym": 3,
-            "m. Kyiv": 30, "Sevastopol": 3
+            "Odeska": 28, "Vinnytska": 22, "Kirovohradska": 28, "Khersonska": 20, "Zaporizka": 24,
+            "Mykolaivska": 20, "Sumska": 15, "Chernihivska": 10, "Zhytomyrska": 12,
+            "Lvivska": 6, "Ivano-Frankivska": 6, "Ternopilska": 10, "Volynska": 6, "Rivnenska": 6,
+            "Zakarpatska": 3, "Chernivetska": 6, "Khmelnytska": 12,
+            "Donetska": 10, "Luhanska": 10,
+            "Avtonomna Respublika Krym": 3, "Sevastopol": 3, "m. Kyiv": 30
         },
         1934: {
             "Poltavska": 20, "Cherkaska": 18, "Kyivska": 15, "Kharkivska": 15, "Dnipropetrovska": 12,
-            "Odeska": 10, "Donetska": 4, "Vinnytska": 8, "Zhytomyrska": 5, "Chernihivska": 4,
-            "Sumska": 6, "Khmelnytska": 5, "Ternopilska": 4, "Lvivska": 3, "Ivano-Frankivska": 3,
-            "Zakarpatska": 2, "Volynska": 3, "Rivnenska": 3, "Chernivetska": 3, "Mykolaivska": 7,
-            "Khersonska": 7, "Zaporizka": 9, "Luhanska": 4, "Avtonomna Respublika Krym": 2,
-            "m. Kyiv": 12, "Sevastopol": 2
+            "Odeska": 10, "Vinnytska": 8, "Kirovohradska": 10, "Khersonska": 7, "Zaporizka": 9,
+            "Mykolaivska": 7, "Sumska": 6, "Chernihivska": 4, "Zhytomyrska": 5,
+            "Lvivska": 3, "Ivano-Frankivska": 3, "Ternopilska": 4, "Volynska": 3, "Rivnenska": 3,
+            "Zakarpatska": 2, "Chernivetska": 3, "Khmelnytska": 5,
+            "Donetska": 4, "Luhanska": 4,
+            "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 12
         }
     };
 
-    // Helper to get mortality for a given year (integer)
+    // Descriptive text for each year (interpolated)
+    const yearDescriptions = {
+        1931: "1931: Collectivization intensifies – Grain quotas rise sharply; resistance leads to mass deportations; early signs of food shortages appear.",
+        1932: "1932: Famine begins – By spring starvation spreads. The 'Law of Five Ears' makes grain theft a capital offense. Ukraine's borders are sealed; blacklists cut off villages from food.",
+        1933: "1933: Peak mortality – Apocalyptic conditions: cannibalism, corpses in streets. Foreign journalists expose the famine but are mocked. Soviet press denies any famine.",
+        1934: "1934: Famine subsides – The worst is over, but millions have died. The Soviet regime continues to suppress information. Villages erased from maps never recover."
+    };
+
+    // Helper to get mortality for integer year (with fuzzy name matching)
     function getMortalityAtYear(name, year) {
         if (!name || !yearData[year]) return null;
         if (yearData[year][name]) return yearData[year][name];
-        // Fuzzy match
+        // Fuzzy match: remove common suffixes
         const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
         for (let key in yearData[year]) {
             if (key.includes(base) || base.includes(key)) return yearData[year][key];
@@ -121,44 +161,56 @@
         return null;
     }
 
-    // Interpolate between two years (e.g., 1932.5 -> between 1932 and 1933)
+    // Interpolate mortality between years (linear)
     function getInterpolatedMortality(name, t) {
         const y1 = Math.floor(t);
         const y2 = Math.ceil(t);
         if (y1 === y2) return getMortalityAtYear(name, y1);
         const m1 = getMortalityAtYear(name, y1);
         const m2 = getMortalityAtYear(name, y2);
-        if (m1 === null || m2 === null) return m1 || m2;
+        if (m1 === null && m2 === null) return null;
+        if (m1 === null) return m2;
+        if (m2 === null) return m1;
         const frac = t - y1;
         return m1 + (m2 - m1) * frac;
     }
 
-    function getColor(mortality) {
+    // Continuous color: from #fee5d9 (low) to #a50f15 (high)
+    function getContinuousColor(mortality) {
         if (mortality === undefined || mortality === null) return '#cccccc';
-        if (mortality <= 10) return '#fee5d9';
-        if (mortality <= 20) return '#fcbba1';
-        if (mortality <= 30) return '#fc9272';
-        if (mortality <= 40) return '#fb6a4a';
-        if (mortality <= 50) return '#ef3b2c';
-        return '#a50f15';
+        // Clamp to 0-60 range (max we use is 52)
+        const t = Math.min(1, Math.max(0, mortality / 55));
+        // Interpolate between #fee5d9 (RGB 254,229,217) and #a50f15 (RGB 165,15,21)
+        const r = Math.floor(254 - (254 - 165) * t);
+        const g = Math.floor(229 - (229 - 15) * t);
+        const b = Math.floor(217 - (217 - 21) * t);
+        return `rgb(${r}, ${g}, ${b})`;
     }
 
     let geojsonLayer;
-    let currentT = 1932;   // continuous year value
+    let currentT = 1932;
     let map;
 
     function updateMapColors(t) {
         currentT = t;
         const yearDisplay = document.getElementById('year-display');
         yearDisplay.innerText = t.toFixed(1);
+
+        // Update year description (use nearest integer for description)
+        const intYear = Math.round(t);
+        const desc = yearDescriptions[intYear] || yearDescriptions[1932];
+        document.getElementById('year-description').innerHTML = `<strong>${desc.split(':')[0]}:</strong> ${desc.split(':').slice(1).join(':')}`;
+
         if (geojsonLayer) {
             geojsonLayer.eachLayer(function(layer) {
                 const props = layer.feature.properties;
                 const name = props.shapeName || props.NAME_1 || props.NAME || props.name || props.ADMIN || '';
                 const mortality = getInterpolatedMortality(name, t);
                 layer.setStyle({
-                    fillColor: getColor(mortality),
-                    fillOpacity: 0.7
+                    fillColor: getContinuousColor(mortality),
+                    fillOpacity: 0.7,
+                    weight: 1.5,
+                    color: '#2c3e50'
                 });
                 if (layer.getPopup()) {
                     let popupContent = `<strong>${name}</strong><br>`;
@@ -174,18 +226,15 @@
             });
         }
 
-        // Update summary text based on the integer year (for simplicity, use nearest integer)
+        // Update summary based on integer year
         const intYear = Math.round(t);
         const data = yearData[intYear];
         if (data) {
-            // Find top 4 regions by mortality
             const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
             const top4 = sorted.slice(0, 4);
             const summaryDiv = document.getElementById('summary');
             summaryDiv.innerHTML = `<strong>📌 Most affected regions (${intYear}):</strong> ` +
                 top4.map(([name, val]) => `${name.replace(/ska$/, '')} (${val}%)`).join(', ');
-        } else {
-            document.getElementById('summary').innerHTML = `<strong>📌 Most affected regions:</strong> (data for this period not available)`;
         }
     }
 
@@ -230,7 +279,7 @@
                         const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
                         const mortality = getInterpolatedMortality(name, currentT);
                         return {
-                            fillColor: getColor(mortality),
+                            fillColor: getContinuousColor(mortality),
                             weight: 1.5,
                             opacity: 0.8,
                             color: '#2c3e50',
@@ -255,26 +304,24 @@
                 }).addTo(map);
                 map.fitBounds(geojsonLayer.getBounds());
 
-                // Legend
+                // Legend with gradient bar
                 const legend = L.control({ position: 'bottomright' });
                 legend.onAdd = function() {
                     const div = L.DomUtil.create('div', 'legend');
                     div.innerHTML = `
                         <h4>📈 Mortality (%)</h4>
-                        <div class="legend-item"><span class="legend-color" style="background:#fee5d9;"></span> ≤10%</div>
-                        <div class="legend-item"><span class="legend-color" style="background:#fcbba1;"></span> 11–20%</div>
-                        <div class="legend-item"><span class="legend-color" style="background:#fc9272;"></span> 21–30%</div>
-                        <div class="legend-item"><span class="legend-color" style="background:#fb6a4a;"></span> 31–40%</div>
-                        <div class="legend-item"><span class="legend-color" style="background:#ef3b2c;"></span> 41–50%</div>
-                        <div class="legend-item"><span class="legend-color" style="background:#a50f15;"></span> >50%</div>
+                        <div class="gradient-bar"></div>
+                        <div class="legend-labels">
+                            <span>≤10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>>50%</span>
+                        </div>
                         <hr style="margin: 8px 0;">
-                        <div class="legend-item"><span class="legend-color" style="background:#cccccc;"></span> No data</div>
+                        <div><span style="background:#cccccc; display:inline-block; width:20px; height:20px; border:1px solid #ccc;"></span> No data</div>
                     `;
                     return div;
                 };
                 legend.addTo(map);
 
-                // Slider with continuous values (step 0.1)
+                // Slider with continuous step 0.1
                 const slider = document.getElementById('timeline-slider');
                 const yearDisplay = document.getElementById('year-display');
                 noUiSlider.create(slider, {

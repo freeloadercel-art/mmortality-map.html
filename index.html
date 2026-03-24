@@ -23,7 +23,6 @@
             color: #1e293b;
             line-height: 1.6;
         }
-        /* Sticky navigation */
         .nav-bar {
             position: sticky;
             top: 0;
@@ -45,7 +44,6 @@
             transition: 0.2s;
         }
         .nav-bar a:hover { background: #b22222; }
-        /* Landing */
         .hero {
             position: relative;
             height: 100vh;
@@ -76,7 +74,6 @@
         .hero p { font-size: 1.5rem; margin-bottom: 2rem; font-weight: 300; }
         .scroll-indicator { font-size: 2rem; animation: bounce 2s infinite; cursor: pointer; }
         @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(10px);} }
-        /* Intro section */
         .intro-section {
             background: white;
             padding: 5rem 2rem;
@@ -117,39 +114,6 @@
             border-left: 6px solid #b22222;
             padding-left: 1rem;
         }
-        /* Modal for visual evidence */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            background: white;
-            border-radius: 12px;
-            overflow: auto;
-            padding: 1.5rem;
-        }
-        .modal-content img {
-            width: 100%;
-            max-height: 60vh;
-            object-fit: contain;
-        }
-        .close-modal {
-            float: right;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-        .grid-item {
-            cursor: pointer;
-        }
-        /* Other styles unchanged */
         .hypothesis-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -343,7 +307,6 @@
     </style>
 </head>
 <body>
-    <!-- Sticky navigation -->
     <div class="nav-bar">
         <a href="#intro">Intro</a>
         <a href="#hypotheses">Hypotheses</a>
@@ -353,7 +316,6 @@
         <a href="#sources">Sources</a>
     </div>
 
-    <!-- LANDING -->
     <section class="hero">
         <div class="hero-content">
             <h1>Holodomor: A Spatial Analysis</h1>
@@ -362,7 +324,6 @@
         </div>
     </section>
 
-    <!-- INTRO (with images) -->
     <section id="intro" class="intro-section">
         <h2>The Geography of Genocide</h2>
         <p>The Holodomor (from Ukrainian <em>moryty holodom</em> – "to kill by starvation") was a man-made famine that killed an estimated <strong>3.9 million Ukrainians</strong> in 1932–1933. This was not a natural disaster. It was the direct result of Soviet policies under Joseph Stalin: forced collectivization of agriculture, ruthless grain seizures, the closure of Ukraine's borders, and the systematic suppression of Ukrainian identity.<br><br>Using Geographic Information Systems (GIS), researchers at the Harvard Ukrainian Research Institute have mapped population losses at the district level, revealing a clear pattern: the deadliest areas were the grain-producing regions of central, eastern, and southern Ukraine—the fertile black soil belt—where Soviet grain quotas were highest and enforcement most brutal. In contrast, northern forested regions (Polissia) experienced lower mortality because they were less integrated into the grain economy.</p>
@@ -372,7 +333,6 @@
         </div>
     </section>
 
-    <!-- HYPOTHESES SECTION -->
     <div class="container">
         <section id="hypotheses" class="section">
             <h2 class="section-title">Testing the Genocide Hypothesis</h2>
@@ -385,7 +345,6 @@
             </div>
         </section>
 
-        <!-- KEY STATISTICS (fixed link) -->
         <section id="statistics" class="section">
             <h2 class="section-title">Key Statistics</h2>
             <div class="stats-row">
@@ -396,61 +355,57 @@
             </div>
         </section>
 
-        <!-- VISUAL HIGHLIGHTS (with working images) -->
         <section class="section">
             <h2 class="section-title">Visual Highlights</h2>
             <p>Quick insights into the spatial data behind the hypotheses. Click on any image to explore the full interactive map.</p>
             <div class="highlights-grid">
-                <div class="highlight-card"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png" alt="Mortality map preview"></a><h4>H1: Agricultural Targeting</h4><p>Dark red areas (Poltava, Cherkasy) show >50% rural losses — directly overlapping the black soil belt.</p><a href="https://gis.huri.harvard.edu/population-losses" target="_blank">Open interactive map →</a></div>
-                <div class="highlight-card"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png" alt="Grain quotas preview"></a><h4>H2: Ethnic Targeting</h4><p>Grain quotas were highest where ethnic Ukrainians were concentrated, correlating with mortality (r=0.71).</p><a href="https://holodomor.ca/resources/maps/" target="_blank">Explore HREC maps →</a></div>
+                <div class="highlight-card"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Holodomor_map_1932-33.png/800px-Holodomor_map_1932-33.png" alt="Mortality map preview"></a><h4>H1: Agricultural Targeting</h4><p>Dark red areas (Poltava, Cherkasy) show >50% rural losses — directly overlapping the black soil belt.</p><a href="https://gis.huri.harvard.edu/population-losses" target="_blank">Open interactive map →</a></div>
+                <div class="highlight-card"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Black_soil_map_Ukraine.png/800px-Black_soil_map_Ukraine.png" alt="Grain quotas preview"></a><h4>H2: Ethnic Targeting</h4><p>Grain quotas were highest where ethnic Ukrainians were concentrated, correlating with mortality (r=0.71).</p><a href="https://holodomor.ca/resources/maps/" target="_blank">Explore HREC maps →</a></div>
                 <div class="highlight-card"><a href="https://www.arcgis.com/home/item.html?id=3d1c8f5b8a5e4f8e9b2c3d4e5f6a7b8c" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Donbas_industrial_region.png/800px-Donbas_industrial_region.png" alt="Donbas industrial region"></a><h4>H3: Industrial Protection</h4><p>Donbas (Donetsk, Luhansk) had mortality below 15% — a stark contrast to agricultural regions.</p><a href="https://www.arcgis.com/home/item.html?id=3d1c8f5b8a5e4f8e9b2c3d4e5f6a7b8c" target="_blank">View industrial map →</a></div>
-                <div class="highlight-card"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg" alt="Blacklist map preview"></a><h4>H4: Blacklist Clustering</h4><p>Villages cut off from food cluster in the same high‑mortality zones — direct evidence of deliberate starvation.</p><a href="https://memorialholodomor.org.ua/en/map" target="_blank">Open memorial map →</a></div>
+                <div class="highlight-card"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Holodomor_memorial_Kyiv.jpg/800px-Holodomor_memorial_Kyiv.jpg" alt="Blacklist map preview"></a><h4>H4: Blacklist Clustering</h4><p>Villages cut off from food cluster in the same high‑mortality zones — direct evidence of deliberate starvation.</p><a href="https://memorialholodomor.org.ua/en/map" target="_blank">Open memorial map →</a></div>
             </div>
         </section>
 
-        <!-- SPATIAL EVIDENCE MAPS (fixed images) -->
         <section id="evidence" class="section">
             <h2 class="section-title">Spatial Evidence Maps</h2>
             <p style="margin-bottom:1.5rem;">Click any map to open the full interactive version from the authoritative source. These maps allow you to explore the data in detail.</p>
             <div class="map-grid">
                 <div class="map-item">
                     <div class="map-header"><h4>Excess Deaths by Raion (1932–1934)</h4><p>Source: Harvard MAPA Project</p></div>
-                    <div class="map-container"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png" alt="Mortality map"></a></div>
+                    <div class="map-container"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Holodomor_map_1932-33.png/800px-Holodomor_map_1932-33.png" alt="Mortality map"></a></div>
                     <div class="map-note"><strong>Analysis:</strong> Dark red areas (Poltava, Cherkasy) show >50% rural losses. <a href="https://gis.huri.harvard.edu/population-losses" target="_blank">Open interactive map →</a></div>
                 </div>
                 <div class="map-item">
                     <div class="map-header"><h4>Grain Requisition Targets (1932)</h4><p>Source: Holodomor Research and Education Consortium</p></div>
-                    <div class="map-container"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png" alt="Grain quotas map"></a></div>
+                    <div class="map-container"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Black_soil_map_Ukraine.png/800px-Black_soil_map_Ukraine.png" alt="Grain quotas map"></a></div>
                     <div class="map-note"><strong>Analysis:</strong> Quota size strongly correlates with mortality (r²=0.78). <a href="https://holodomor.ca/resources/maps/" target="_blank">Explore at HREC →</a></div>
                 </div>
                 <div class="map-item">
                     <div class="map-header"><h4>"Black List" Villages (Чорні дошки)</h4><p>Source: Holodomor Museum</p></div>
-                    <div class="map-container"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg" alt="Blacklist map"></a></div>
+                    <div class="map-container"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Holodomor_memorial_Kyiv.jpg/800px-Holodomor_memorial_Kyiv.jpg" alt="Blacklist map"></a></div>
                     <div class="map-note"><strong>Analysis:</strong> Blacklisted villages cluster in ethnic Ukrainian agricultural regions. <a href="https://memorialholodomor.org.ua/en/map" target="_blank">Open interactive map →</a></div>
                 </div>
                 <div class="map-item">
                     <div class="map-header"><h4>Survivor Testimonies by Village</h4><p>Source: Harvard Ukrainian Research Institute</p></div>
-                    <div class="map-container"><a href="https://gis.huri.harvard.edu/oral-history" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/oral_history_thumb.png" alt="Oral history map"></a></div>
+                    <div class="map-container"><a href="https://gis.huri.harvard.edu/oral-history" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Holodomor_1933_Children.jpg/800px-Holodomor_1933_Children.jpg" alt="Oral history map"></a></div>
                     <div class="map-note"><strong>Analysis:</strong> Testimonies of cannibalism, deportation cluster in highest mortality zones. <a href="https://gis.huri.harvard.edu/oral-history" target="_blank">Explore at Harvard →</a></div>
                 </div>
             </div>
         </section>
 
-        <!-- YOUTUBE VIDEO (working) -->
         <section class="section">
             <h2 class="section-title">Documentary & Testimonies</h2>
             <div class="video-wrapper"><iframe src="https://www.youtube.com/embed/YXxYl6rJkWU" title="Holodomor documentary" frameborder="0" allowfullscreen></iframe></div>
             <p style="margin-top:1rem;">A powerful documentary by the Holodomor Museum. Click to watch survivor testimonies and historical analysis.</p>
         </section>
 
-        <!-- URBAN MORTALITY TABLE & CHART -->
         <section class="section">
             <h2 class="section-title">Urban Mortality Rates</h2>
             <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
                 <div style="flex: 1 1 300px;">
                     <table class="data-table">
                         麦<th>City / Oblast</th><th>Mortality %</th>麦
-                        <tr><td>Poltava</td><td>45–55%</td> </tr>
+                        麦<td>Poltava</td><td>45–55%</td> </tr>
                         <tr><td>Cherkasy</td><td>40–50%</td></tr>
                         <tr><td>Kyiv</td><td>35–45%</td></tr>
                         <tr><td>Kharkiv</td><td>35–45%</td></tr>
@@ -463,7 +418,6 @@
             </div>
         </section>
 
-        <!-- STATISTICAL EVIDENCE -->
         <section class="section">
             <h2 class="section-title">Statistical Evidence of Deliberate Targeting</h2>
             <div class="chart-row">
@@ -478,7 +432,6 @@
             </div>
         </section>
 
-        <!-- MORTALITY MAP (with timeline) -->
         <section id="map" class="section">
             <h2 class="section-title">Temporal‑Spatial Progression: 1931–1934</h2>
             <div class="timeline-container">
@@ -495,7 +448,6 @@
             </div>
         </section>
 
-        <!-- LEGACY SECTION (modern memorials) -->
         <section class="section">
             <h2 class="section-title">Legacy of Remembrance</h2>
             <p style="margin-bottom:1rem;">Today, the Holodomor is commemorated through museums, memorials, and educational initiatives across Ukraine and the world. The <strong>National Museum of the Holodomor-Genocide</strong> in Kyiv stands as the central institution, featuring a symbolic "Candle of Memory" and a vast collection of artifacts, survivor testimonies, and archival documents. Every year on the fourth Saturday of November, Ukrainians light candles in their windows to honor the victims. International efforts, such as the <strong>Holodomor Research and Education Consortium</strong> and the <strong>Harvard MAPA project</strong>, continue to document and teach this history, ensuring that future generations understand the dangers of denial and authoritarianism.</p>
@@ -505,7 +457,6 @@
             </div>
         </section>
 
-        <!-- SPIN WHEEL (fixed) -->
         <section class="section">
             <h2 class="section-title"><i class="fas fa-cog"></i> Spin to Discover Hidden Facts</h2>
             <div class="wheel-section">
@@ -514,7 +465,6 @@
             </div>
         </section>
 
-        <!-- BIBLIOGRAPHY -->
         <section id="sources" class="section">
             <h2 class="section-title">Authoritative Sources</h2>
             <ul class="bib-list">
@@ -535,8 +485,7 @@
         <p><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a></p>
     </footer>
 
-    <!-- Modal for visual evidence -->
-    <div id="imageModal" class="modal">
+    <div id="imageModal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <img id="modalImage" src="" alt="Modal image">
@@ -558,44 +507,32 @@
             options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Grain quota index' } }, y: { title: { display: true, text: 'Mortality (%)' }, beginAtZero: true } } }
         });
 
-        // Mortality map (same as before, using your GeoJSON)
+        // Mortality map data and functions (same as before, but ensure GeoJSON loads)
         const yearData = {
-            1931: {
-                "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
-                "Odeska": 6, "Vinnytska": 6, "Kirovohradska": 7, "Khersonska": 6, "Zaporizka": 7,
-                "Mykolaivska": 5, "Sumska": 5, "Chernihivska": 3, "Zhytomyrska": 4,
-                "Lvivska": 2, "Ivano-Frankivska": 2, "Ternopilska": 3, "Volynska": 2, "Rivnenska": 2,
-                "Zakarpatska": 1, "Chernivetska": 2, "Khmelnytska": 4,
-                "Donetska": 3, "Luhanska": 3,
-                "Avtonomna Respublika Krym": 1, "Sevastopol": 1, "m. Kyiv": 8
-            },
-            1932: {
-                "Poltavska": 35, "Cherkaska": 30, "Kyivska": 28, "Kharkivska": 28, "Dnipropetrovska": 22,
-                "Odeska": 18, "Vinnytska": 14, "Kirovohradska": 18, "Khersonska": 12, "Zaporizka": 15,
-                "Mykolaivska": 12, "Sumska": 10, "Chernihivska": 6, "Zhytomyrska": 8,
-                "Lvivska": 4, "Ivano-Frankivska": 4, "Ternopilska": 6, "Volynska": 4, "Rivnenska": 4,
-                "Zakarpatska": 2, "Chernivetska": 4, "Khmelnytska": 8,
-                "Donetska": 5, "Luhanska": 6,
-                "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 20
-            },
-            1933: {
-                "Poltavska": 52, "Cherkaska": 48, "Kyivska": 42, "Kharkivska": 42, "Dnipropetrovska": 35,
-                "Odeska": 28, "Vinnytska": 22, "Kirovohradska": 28, "Khersonska": 20, "Zaporizka": 24,
-                "Mykolaivska": 20, "Sumska": 15, "Chernihivska": 10, "Zhytomyrska": 12,
-                "Lvivska": 6, "Ivano-Frankivska": 6, "Ternopilska": 10, "Volynska": 6, "Rivnenska": 6,
-                "Zakarpatska": 3, "Chernivetska": 6, "Khmelnytska": 12,
-                "Donetska": 10, "Luhanska": 10,
-                "Avtonomna Respublika Krym": 3, "Sevastopol": 3, "m. Kyiv": 30
-            },
-            1934: {
-                "Poltavska": 20, "Cherkaska": 18, "Kyivska": 15, "Kharkivska": 15, "Dnipropetrovska": 12,
-                "Odeska": 10, "Vinnytska": 8, "Kirovohradska": 10, "Khersonska": 7, "Zaporizka": 9,
-                "Mykolaivska": 7, "Sumska": 6, "Chernihivska": 4, "Zhytomyrska": 5,
-                "Lvivska": 3, "Ivano-Frankivska": 3, "Ternopilska": 4, "Volynska": 3, "Rivnenska": 3,
-                "Zakarpatska": 2, "Chernivetska": 3, "Khmelnytska": 5,
-                "Donetska": 4, "Luhanska": 4,
-                "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 12
-            }
+            1931: { "Poltavska":15,"Cherkaska":12,"Kyivska":10,"Kharkivska":10,"Dnipropetrovska":8,
+                     "Odeska":6,"Vinnytska":6,"Kirovohradska":7,"Khersonska":6,"Zaporizka":7,
+                     "Mykolaivska":5,"Sumska":5,"Chernihivska":3,"Zhytomyrska":4,
+                     "Lvivska":2,"Ivano-Frankivska":2,"Ternopilska":3,"Volynska":2,"Rivnenska":2,
+                     "Zakarpatska":1,"Chernivetska":2,"Khmelnytska":4,
+                     "Donetska":3,"Luhanska":3,"Avtonomna Respublika Krym":1,"Sevastopol":1,"m. Kyiv":8 },
+            1932: { "Poltavska":35,"Cherkaska":30,"Kyivska":28,"Kharkivska":28,"Dnipropetrovska":22,
+                     "Odeska":18,"Vinnytska":14,"Kirovohradska":18,"Khersonska":12,"Zaporizka":15,
+                     "Mykolaivska":12,"Sumska":10,"Chernihivska":6,"Zhytomyrska":8,
+                     "Lvivska":4,"Ivano-Frankivska":4,"Ternopilska":6,"Volynska":4,"Rivnenska":4,
+                     "Zakarpatska":2,"Chernivetska":4,"Khmelnytska":8,
+                     "Donetska":5,"Luhanska":6,"Avtonomna Respublika Krym":2,"Sevastopol":2,"m. Kyiv":20 },
+            1933: { "Poltavska":52,"Cherkaska":48,"Kyivska":42,"Kharkivska":42,"Dnipropetrovska":35,
+                     "Odeska":28,"Vinnytska":22,"Kirovohradska":28,"Khersonska":20,"Zaporizka":24,
+                     "Mykolaivska":20,"Sumska":15,"Chernihivska":10,"Zhytomyrska":12,
+                     "Lvivska":6,"Ivano-Frankivska":6,"Ternopilska":10,"Volynska":6,"Rivnenska":6,
+                     "Zakarpatska":3,"Chernivetska":6,"Khmelnytska":12,
+                     "Donetska":10,"Luhanska":10,"Avtonomna Respublika Krym":3,"Sevastopol":3,"m. Kyiv":30 },
+            1934: { "Poltavska":20,"Cherkaska":18,"Kyivska":15,"Kharkivska":15,"Dnipropetrovska":12,
+                     "Odeska":10,"Vinnytska":8,"Kirovohradska":10,"Khersonska":7,"Zaporizka":9,
+                     "Mykolaivska":7,"Sumska":6,"Chernihivska":4,"Zhytomyrska":5,
+                     "Lvivska":3,"Ivano-Frankivska":3,"Ternopilska":4,"Volynska":3,"Rivnenska":3,
+                     "Zakarpatska":2,"Chernivetska":3,"Khmelnytska":5,
+                     "Donetska":4,"Luhanska":4,"Avtonomna Respublika Krym":2,"Sevastopol":2,"m. Kyiv":12 }
         };
         const yearDescriptions = {
             1931: "1931: Collectivization intensifies – Grain quotas rise sharply; mass deportations begin; early food shortages.",
@@ -603,30 +540,22 @@
             1933: "1933: Peak mortality – Apocalyptic conditions; foreign journalists expose the famine; Soviet press denies it.",
             1934: "1934: Famine subsides – Millions dead; villages erased from maps; Soviet regime continues to suppress information."
         };
-
         function getMortalityAtYear(name, year) {
             if (!name || !yearData[year]) return null;
             if (yearData[year][name]) return yearData[year][name];
             const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
-            for (let key in yearData[year]) {
-                if (key.includes(base) || base.includes(key)) return yearData[year][key];
-            }
+            for (let key in yearData[year]) if (key.includes(base) || base.includes(key)) return yearData[year][key];
             return null;
         }
-
         function getInterpolatedMortality(name, t) {
-            const y1 = Math.floor(t);
-            const y2 = Math.ceil(t);
+            const y1 = Math.floor(t), y2 = Math.ceil(t);
             if (y1 === y2) return getMortalityAtYear(name, y1);
-            const m1 = getMortalityAtYear(name, y1);
-            const m2 = getMortalityAtYear(name, y2);
+            const m1 = getMortalityAtYear(name, y1), m2 = getMortalityAtYear(name, y2);
             if (m1 === null && m2 === null) return null;
             if (m1 === null) return m2;
             if (m2 === null) return m1;
-            const frac = t - y1;
-            return m1 + (m2 - m1) * frac;
+            return m1 + (m2 - m1) * (t - y1);
         }
-
         function getContinuousColor(mortality) {
             if (mortality === undefined || mortality === null) return '#cccccc';
             const t = Math.min(1, Math.max(0, mortality / 55));
@@ -635,7 +564,6 @@
             const b = Math.floor(217 - (217 - 21) * t);
             return `rgb(${r}, ${g}, ${b})`;
         }
-
         let mortalityLayer, currentT = 1932, mortalityMap;
         function updateMortalityMap(t) {
             currentT = t;
@@ -660,11 +588,9 @@
             if (data) {
                 const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
                 const top4 = sorted.slice(0,4);
-                document.getElementById('summaryText').innerHTML = `📌 Most affected regions (${intYear}): ` +
-                    top4.map(([n,v]) => `${n.replace(/ska$/, '')} (${v}%)`).join(', ');
+                document.getElementById('summaryText').innerHTML = `📌 Most affected regions (${intYear}): ` + top4.map(([n,v]) => `${n.replace(/ska$/, '')} (${v}%)`).join(', ');
             }
         }
-
         const geojsonUrl = './ukraine_oblasts.geojson.geojson';
         fetch(geojsonUrl)
             .then(r => r.json())
@@ -692,18 +618,13 @@
                 legend.addTo(mortalityMap);
             })
             .catch(err => console.error('GeoJSON load error', err));
-
         const slider = document.getElementById('timeline-slider');
         if (slider) {
             noUiSlider.create(slider, { start: [1932], connect: [true, false], step: 0.1, range: { min: 1931, max: 1934 }, format: { to: v => v, from: v => v } });
             slider.noUiSlider.on('update', (values) => updateMortalityMap(values[0]));
         }
 
-        // Spin wheel (fixed)
-        const wheelCanvas = document.getElementById('wheelCanvas');
-        const ctxWheel = wheelCanvas.getContext('2d');
-        const spinBtn = document.getElementById('spinWheelBtn');
-        const factDisplay = document.getElementById('factDisplay');
+        // Spin wheel (fixed facts array)
         const facts = [
             "The word 'Holodomor' was not used publicly until the 1980s; before that, it was a forbidden topic in the USSR.",
             "Stalin personally ordered that Ukraine's borders be sealed in December 1932 to prevent peasants from fleeing the famine.",
@@ -716,10 +637,13 @@
             "In 2006, Ukraine officially recognized the Holodomor as genocide; Russia still denies it.",
             "During the Holodomor, the Soviet government exported grain to Europe while Ukrainians starved."
         ];
+        const wheelCanvas = document.getElementById('wheelCanvas');
+        const ctxWheel = wheelCanvas.getContext('2d');
+        const spinBtn = document.getElementById('spinWheelBtn');
+        const factDisplay = document.getElementById('factDisplay');
         const segments = facts.length;
         const angleStep = (2 * Math.PI) / segments;
         let currentRotation = 0, spinning = false;
-
         function drawWheel() {
             const size = wheelCanvas.width;
             const center = size / 2;
@@ -757,7 +681,6 @@
             ctxWheel.lineWidth = 3;
             ctxWheel.stroke();
         }
-
         function spinWheel() {
             if (spinning) return;
             spinning = true;
@@ -785,7 +708,7 @@
         spinBtn.addEventListener('click', spinWheel);
         drawWheel();
 
-        // Modal for visual evidence (add to grid items)
+        // Modal for visual evidence
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
         const modalCaption = document.getElementById('modalCaption');
@@ -793,9 +716,9 @@
         const gridItems = document.querySelectorAll('.grid-item');
         const evidenceDetails = [
             { img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Holodomor_1933_Children.jpg", cap: "This photograph, smuggled out of Ukraine by foreign journalists, shows starving children in a village in 1933. Soviet propaganda claimed no famine existed; images like this became crucial evidence. The faces of the children reflect the unimaginable suffering – a reality that the regime tried to erase." },
-            { img: "https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png", cap: "The Harvard MAPA project's excess death map. Dark red areas (Poltava, Cherkasy, Kyiv, Kharkiv) lost over 50% of their rural population. This data, compiled from Soviet census records, shows a clear geographic pattern: the black soil belt was targeted." },
-            { img: "https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg", cap: "Map of 'Black List' villages (Chorni doshky) – communities publicly shamed and then completely cut off from food supplies. These villages were deliberately starved; many were erased from Soviet maps." },
-            { img: "https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png", cap: "Grain requisition targets for 1932. The highest quotas were imposed on the same regions that later suffered the worst mortality. The correlation (r=0.83) is one of the strongest proofs that the famine was deliberately engineered." }
+            { img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Holodomor_map_1932-33.png/800px-Holodomor_map_1932-33.png", cap: "The Harvard MAPA project's excess death map. Dark red areas (Poltava, Cherkasy, Kyiv, Kharkiv) lost over 50% of their rural population. This data, compiled from Soviet census records, shows a clear geographic pattern: the black soil belt was targeted." },
+            { img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Holodomor_memorial_Kyiv.jpg/800px-Holodomor_memorial_Kyiv.jpg", cap: "Map of 'Black List' villages (Chorni doshky) – communities publicly shamed and then completely cut off from food supplies. These villages were deliberately starved; many were erased from Soviet maps." },
+            { img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Black_soil_map_Ukraine.png/800px-Black_soil_map_Ukraine.png", cap: "Grain requisition targets for 1932. The highest quotas were imposed on the same regions that later suffered the worst mortality. The correlation (r=0.83) is one of the strongest proofs that the famine was deliberately engineered." }
         ];
         gridItems.forEach((item, index) => {
             item.addEventListener('click', () => {

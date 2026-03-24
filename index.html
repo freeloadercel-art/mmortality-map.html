@@ -30,7 +30,20 @@
         .legend h4 { margin: 0 0 0.5rem; font-size: 1rem; }
         .legend-color { display: inline-block; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle; border: 1px solid #ccc; }
         .legend-item { margin-bottom: 4px; }
-        .note { padding: 0.75rem 1.5rem; background: #fef9e3; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
+        .summary {
+            padding: 1rem 1.5rem;
+            background: #fef9e3;
+            font-size: 0.95rem;
+            border-top: 1px solid #e2e8f0;
+            line-height: 1.4;
+        }
+        .summary strong { color: #b22222; }
+        .note {
+            padding: 0.75rem 1.5rem;
+            background: #f8fafc;
+            font-size: 0.85rem;
+            border-top: 1px solid #e2e8f0;
+        }
         .loading, .error { text-align: center; padding: 2rem; }
         .error { color: #b22222; background: #ffe0e0; margin: 1rem; border-radius: 8px; }
     </style>
@@ -39,25 +52,28 @@
 <div class="container">
     <div class="header">
         <h3>🇺🇦 Holodomor Mortality by Oblast (1931–1934)</h3>
-        <p>Estimated percentage of population lost. Darker red = higher mortality. Use the slider to see changes over time.</p>
+        <p>Estimated percentage of population lost. Darker red = higher mortality. Drag the slider to see changes over time.</p>
     </div>
     <div class="timeline-area">
-        <div id="year-display">1932</div>
+        <div id="year-display">1932.0</div>
         <div id="timeline-slider"></div>
         <div class="timeline-labels">
             <span>1931</span><span>1932</span><span>1933</span><span>1934</span>
         </div>
     </div>
     <div class="map-container" id="map"></div>
+    <div class="summary" id="summary">
+        <strong>📌 Most affected regions (1932):</strong> Poltava (35%), Cherkasy (30%), Kyiv (28%), Kharkiv (28%)
+    </div>
     <div class="note">
         <strong>📊 Data sources:</strong> Harvard MAPA Project, Wolowyna et al. (2016).<br>
-        <strong>🗺️ Map data:</strong> Your uploaded GeoJSON file (<code>ukraine_oblasts.geojson</code>) from the same folder.<br>
-        <strong>💡 Tip:</strong> Click on any oblast to see the exact mortality percentage for the selected year.
+        <strong>🗺️ Map data:</strong> geoBoundaries – Ukrainian oblast boundaries (ADM1).<br>
+        <strong>💡 Tip:</strong> Click on any oblast to see the exact mortality for the displayed year.
     </div>
 </div>
 
 <script>
-    // Mortality data per oblast per year (same as before)
+    // Mortality data per oblast per year (percentage of population lost)
     const yearData = {
         1931: {
             "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
@@ -93,6 +109,30 @@
         }
     };
 
+    // Helper to get mortality for a given year (integer)
+    function getMortalityAtYear(name, year) {
+        if (!name || !yearData[year]) return null;
+        if (yearData[year][name]) return yearData[year][name];
+        // Fuzzy match
+        const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
+        for (let key in yearData[year]) {
+            if (key.includes(base) || base.includes(key)) return yearData[year][key];
+        }
+        return null;
+    }
+
+    // Interpolate between two years (e.g., 1932.5 -> between 1932 and 1933)
+    function getInterpolatedMortality(name, t) {
+        const y1 = Math.floor(t);
+        const y2 = Math.ceil(t);
+        if (y1 === y2) return getMortalityAtYear(name, y1);
+        const m1 = getMortalityAtYear(name, y1);
+        const m2 = getMortalityAtYear(name, y2);
+        if (m1 === null || m2 === null) return m1 || m2;
+        const frac = t - y1;
+        return m1 + (m2 - m1) * frac;
+    }
+
     function getColor(mortality) {
         if (mortality === undefined || mortality === null) return '#cccccc';
         if (mortality <= 10) return '#fee5d9';
@@ -104,29 +144,18 @@
     }
 
     let geojsonLayer;
-    let currentYear = 1932;
+    let currentT = 1932;   // continuous year value
     let map;
 
-    function getMortality(name, year) {
-        if (!name || !yearData[year]) return null;
-        if (yearData[year][name]) return yearData[year][name];
-        // Fuzzy match: remove common suffixes
-        const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
-        for (let key in yearData[year]) {
-            if (key.includes(base) || base.includes(key)) return yearData[year][key];
-        }
-        return null;
-    }
-
-    function updateMapColors(year) {
-        currentYear = year;
-        document.getElementById('year-display').innerText = year;
+    function updateMapColors(t) {
+        currentT = t;
+        const yearDisplay = document.getElementById('year-display');
+        yearDisplay.innerText = t.toFixed(1);
         if (geojsonLayer) {
             geojsonLayer.eachLayer(function(layer) {
                 const props = layer.feature.properties;
-                // Try different property names commonly found in GeoJSON
                 const name = props.shapeName || props.NAME_1 || props.NAME || props.name || props.ADMIN || '';
-                const mortality = getMortality(name, year);
+                const mortality = getInterpolatedMortality(name, t);
                 layer.setStyle({
                     fillColor: getColor(mortality),
                     fillOpacity: 0.7
@@ -134,15 +163,29 @@
                 if (layer.getPopup()) {
                     let popupContent = `<strong>${name}</strong><br>`;
                     if (mortality !== null) {
-                        popupContent += `📊 Mortality (${year}): ${mortality}%`;
+                        popupContent += `📊 Mortality (${t.toFixed(1)}): ${mortality.toFixed(1)}%`;
                         if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
                         else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
                     } else {
-                        popupContent += `📊 Data not available for ${year}`;
+                        popupContent += `📊 Data not available for this period`;
                     }
                     layer._popup.setContent(popupContent);
                 }
             });
+        }
+
+        // Update summary text based on the integer year (for simplicity, use nearest integer)
+        const intYear = Math.round(t);
+        const data = yearData[intYear];
+        if (data) {
+            // Find top 4 regions by mortality
+            const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
+            const top4 = sorted.slice(0, 4);
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = `<strong>📌 Most affected regions (${intYear}):</strong> ` +
+                top4.map(([name, val]) => `${name.replace(/ska$/, '')} (${val}%)`).join(', ');
+        } else {
+            document.getElementById('summary').innerHTML = `<strong>📌 Most affected regions:</strong> (data for this period not available)`;
         }
     }
 
@@ -170,7 +213,7 @@
         mapDiv.style.position = 'relative';
         mapDiv.appendChild(loadingDiv);
 
-        // Use your local GeoJSON file
+        // Use your working GeoJSON file name
         const geojsonUrl = './ukraine_oblasts.geojson.geojson';
 
         fetch(geojsonUrl)
@@ -185,7 +228,7 @@
                 geojsonLayer = L.geoJSON(data, {
                     style: function(feature) {
                         const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
-                        const mortality = getMortality(name, currentYear);
+                        const mortality = getInterpolatedMortality(name, currentT);
                         return {
                             fillColor: getColor(mortality),
                             weight: 1.5,
@@ -197,14 +240,14 @@
                     onEachFeature: function(feature, layer) {
                         const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
                         layer.bindPopup(() => {
-                            const mortality = getMortality(name, currentYear);
+                            const mortality = getInterpolatedMortality(name, currentT);
                             let popupContent = `<strong>${name}</strong><br>`;
                             if (mortality !== null) {
-                                popupContent += `📊 Mortality (${currentYear}): ${mortality}%`;
+                                popupContent += `📊 Mortality (${currentT.toFixed(1)}): ${mortality.toFixed(1)}%`;
                                 if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
                                 else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
                             } else {
-                                popupContent += `📊 Data not available for ${currentYear}`;
+                                popupContent += `📊 Data not available for this period`;
                             }
                             return popupContent;
                         });
@@ -231,19 +274,21 @@
                 };
                 legend.addTo(map);
 
-                // Slider
+                // Slider with continuous values (step 0.1)
                 const slider = document.getElementById('timeline-slider');
                 const yearDisplay = document.getElementById('year-display');
                 noUiSlider.create(slider, {
                     start: [1932],
                     connect: [true, false],
-                    step: 1,
+                    step: 0.1,
                     range: { min: 1931, max: 1934 },
-                    format: { to: v => Math.round(v), from: v => Math.round(v) }
+                    format: { to: v => v, from: v => v }
                 });
                 slider.noUiSlider.on('update', (values) => {
-                    updateMapColors(values[0]);
+                    const t = values[0];
+                    updateMapColors(t);
                 });
+                updateMapColors(1932);
             })
             .catch(error => {
                 console.error('Failed to load GeoJSON:', error);
@@ -252,17 +297,11 @@
                 errorDiv.className = 'error';
                 errorDiv.innerHTML = `
                     <strong>❌ Could not load local GeoJSON file.</strong><br>
-                    Make sure you have uploaded a file named <code>ukraine_oblasts.geojson</code> to the <strong>same folder</strong> as this HTML file.<br>
+                    Make sure you have uploaded the file <code>ukraine_oblasts.geojson.geojson</code> to the same folder as this HTML file.<br>
                     <br>
                     <strong>Current URL attempted:</strong> ${geojsonUrl}<br>
                     <br>
-                    If your file has a different name, edit the <code>geojsonUrl</code> variable in the code (line ~150).<br>
-                    <br>
-                    <strong>To download the correct GeoJSON:</strong><br>
-                    1. Go to <a href="https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/gbOpen/UKR/ADM1" target="_blank">geoBoundaries ADM1 page</a><br>
-                    2. Click on <code>geoBoundaries-UKR-ADM1.geojson</code><br>
-                    3. Click the <strong>Raw</strong> button and save the file.<br>
-                    4. Rename it to <code>ukraine_oblasts.geojson</code> and upload to this folder.
+                    If your file has a different name, edit the <code>geojsonUrl</code> variable in the code.
                 `;
                 document.getElementById('map').innerHTML = '';
                 document.getElementById('map').appendChild(errorDiv);

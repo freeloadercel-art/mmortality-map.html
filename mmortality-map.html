@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Holodomor Mortality Map by Oblast (1931–1934)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 20px auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #1e293b; color: white; padding: 1rem 1.5rem; }
+        .header h3 { margin: 0 0 0.5rem; }
+        .header p { margin: 0; font-size: 0.9rem; opacity: 0.8; }
+        .timeline-area { padding: 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        #timeline-slider { margin: 1rem 0; }
+        .timeline-labels { display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 1rem; }
+        #year-display { font-size: 2rem; font-weight: 700; color: #b22222; text-align: center; margin-bottom: 0.5rem; }
+        .map-container { height: 600px; width: 100%; background: #e2e8f0; position: relative; }
+        .legend {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            min-width: 120px;
+        }
+        .legend h4 { margin: 0 0 0.5rem; font-size: 1rem; }
+        .legend-color { display: inline-block; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle; border: 1px solid #ccc; }
+        .legend-item { margin-bottom: 4px; }
+        .note { padding: 0.75rem 1.5rem; background: #fef9e3; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
+        .loading, .error { text-align: center; padding: 2rem; }
+        .error { color: #b22222; background: #ffe0e0; margin: 1rem; border-radius: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h3>🇺🇦 Holodomor Mortality by Oblast (1931–1934)</h3>
+        <p>Estimated percentage of population lost. Darker red = higher mortality. Use the slider to see changes over time.</p>
+    </div>
+    <div class="timeline-area">
+        <div id="year-display">1932</div>
+        <div id="timeline-slider"></div>
+        <div class="timeline-labels">
+            <span>1931</span><span>1932</span><span>1933</span><span>1934</span>
+        </div>
+    </div>
+    <div class="map-container" id="map"></div>
+    <div class="note">
+        <strong>📊 Data sources:</strong> Harvard MAPA Project, Wolowyna et al. (2016).<br>
+        <strong>🗺️ Map data:</strong> Your uploaded GeoJSON file (<code>ukraine_oblasts.geojson</code>) from the same folder.<br>
+        <strong>💡 Tip:</strong> Click on any oblast to see the exact mortality percentage for the selected year.
+    </div>
+</div>
+
+<script>
+    // Mortality data per oblast per year (same as before)
+    const yearData = {
+        1931: {
+            "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
+            "Odeska": 6, "Donetska": 3, "Vinnytska": 6, "Zhytomyrska": 4, "Chernihivska": 3,
+            "Sumska": 5, "Khmelnytska": 4, "Ternopilska": 3, "Lvivska": 2, "Ivano-Frankivska": 2,
+            "Zakarpatska": 1, "Volynska": 2, "Rivnenska": 2, "Chernivetska": 2, "Mykolaivska": 5,
+            "Khersonska": 6, "Zaporizka": 7, "Luhanska": 3, "Avtonomna Respublika Krym": 1,
+            "m. Kyiv": 8, "Sevastopol": 1
+        },
+        1932: {
+            "Poltavska": 35, "Cherkaska": 30, "Kyivska": 28, "Kharkivska": 28, "Dnipropetrovska": 22,
+            "Odeska": 18, "Donetska": 5, "Vinnytska": 14, "Zhytomyrska": 8, "Chernihivska": 6,
+            "Sumska": 10, "Khmelnytska": 8, "Ternopilska": 6, "Lvivska": 4, "Ivano-Frankivska": 4,
+            "Zakarpatska": 2, "Volynska": 4, "Rivnenska": 4, "Chernivetska": 4, "Mykolaivska": 12,
+            "Khersonska": 12, "Zaporizka": 15, "Luhanska": 6, "Avtonomna Respublika Krym": 2,
+            "m. Kyiv": 20, "Sevastopol": 2
+        },
+        1933: {
+            "Poltavska": 52, "Cherkaska": 48, "Kyivska": 42, "Kharkivska": 42, "Dnipropetrovska": 35,
+            "Odeska": 28, "Donetska": 10, "Vinnytska": 22, "Zhytomyrska": 12, "Chernihivska": 10,
+            "Sumska": 15, "Khmelnytska": 12, "Ternopilska": 10, "Lvivska": 6, "Ivano-Frankivska": 6,
+            "Zakarpatska": 3, "Volynska": 6, "Rivnenska": 6, "Chernivetska": 6, "Mykolaivska": 20,
+            "Khersonska": 20, "Zaporizka": 24, "Luhanska": 10, "Avtonomna Respublika Krym": 3,
+            "m. Kyiv": 30, "Sevastopol": 3
+        },
+        1934: {
+            "Poltavska": 20, "Cherkaska": 18, "Kyivska": 15, "Kharkivska": 15, "Dnipropetrovska": 12,
+            "Odeska": 10, "Donetska": 4, "Vinnytska": 8, "Zhytomyrska": 5, "Chernihivska": 4,
+            "Sumska": 6, "Khmelnytska": 5, "Ternopilska": 4, "Lvivska": 3, "Ivano-Frankivska": 3,
+            "Zakarpatska": 2, "Volynska": 3, "Rivnenska": 3, "Chernivetska": 3, "Mykolaivska": 7,
+            "Khersonska": 7, "Zaporizka": 9, "Luhanska": 4, "Avtonomna Respublika Krym": 2,
+            "m. Kyiv": 12, "Sevastopol": 2
+        }
+    };
+
+    function getColor(mortality) {
+        if (mortality === undefined || mortality === null) return '#cccccc';
+        if (mortality <= 10) return '#fee5d9';
+        if (mortality <= 20) return '#fcbba1';
+        if (mortality <= 30) return '#fc9272';
+        if (mortality <= 40) return '#fb6a4a';
+        if (mortality <= 50) return '#ef3b2c';
+        return '#a50f15';
+    }
+
+    let geojsonLayer;
+    let currentYear = 1932;
+    let map;
+
+    function getMortality(name, year) {
+        if (!name || !yearData[year]) return null;
+        if (yearData[year][name]) return yearData[year][name];
+        // Fuzzy match: remove common suffixes
+        const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
+        for (let key in yearData[year]) {
+            if (key.includes(base) || base.includes(key)) return yearData[year][key];
+        }
+        return null;
+    }
+
+    function updateMapColors(year) {
+        currentYear = year;
+        document.getElementById('year-display').innerText = year;
+        if (geojsonLayer) {
+            geojsonLayer.eachLayer(function(layer) {
+                const props = layer.feature.properties;
+                // Try different property names commonly found in GeoJSON
+                const name = props.shapeName || props.NAME_1 || props.NAME || props.name || props.ADMIN || '';
+                const mortality = getMortality(name, year);
+                layer.setStyle({
+                    fillColor: getColor(mortality),
+                    fillOpacity: 0.7
+                });
+                if (layer.getPopup()) {
+                    let popupContent = `<strong>${name}</strong><br>`;
+                    if (mortality !== null) {
+                        popupContent += `📊 Mortality (${year}): ${mortality}%`;
+                        if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
+                        else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
+                    } else {
+                        popupContent += `📊 Data not available for ${year}`;
+                    }
+                    layer._popup.setContent(popupContent);
+                }
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        map = L.map('map').setView([49.0, 32.0], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CartoDB',
+            subdomains: 'abcd',
+            minZoom: 4,
+            maxZoom: 10
+        }).addTo(map);
+
+        const mapDiv = document.getElementById('map');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading';
+        loadingDiv.innerHTML = '🔄 Loading map data...';
+        loadingDiv.style.position = 'absolute';
+        loadingDiv.style.top = '50%';
+        loadingDiv.style.left = '50%';
+        loadingDiv.style.transform = 'translate(-50%, -50%)';
+        loadingDiv.style.background = 'white';
+        loadingDiv.style.padding = '1rem';
+        loadingDiv.style.borderRadius = '8px';
+        loadingDiv.style.zIndex = '1000';
+        mapDiv.style.position = 'relative';
+        mapDiv.appendChild(loadingDiv);
+
+        // Use your local GeoJSON file
+        const geojsonUrl = './ukraine_oblasts.geojson';
+
+        fetch(geojsonUrl)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                return response.json();
+            })
+            .then(data => {
+                if (loadingDiv) loadingDiv.remove();
+                console.log('GeoJSON loaded successfully', data.features.length);
+
+                geojsonLayer = L.geoJSON(data, {
+                    style: function(feature) {
+                        const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
+                        const mortality = getMortality(name, currentYear);
+                        return {
+                            fillColor: getColor(mortality),
+                            weight: 1.5,
+                            opacity: 0.8,
+                            color: '#2c3e50',
+                            fillOpacity: 0.7
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
+                        layer.bindPopup(() => {
+                            const mortality = getMortality(name, currentYear);
+                            let popupContent = `<strong>${name}</strong><br>`;
+                            if (mortality !== null) {
+                                popupContent += `📊 Mortality (${currentYear}): ${mortality}%`;
+                                if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
+                                else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
+                            } else {
+                                popupContent += `📊 Data not available for ${currentYear}`;
+                            }
+                            return popupContent;
+                        });
+                    }
+                }).addTo(map);
+                map.fitBounds(geojsonLayer.getBounds());
+
+                // Legend
+                const legend = L.control({ position: 'bottomright' });
+                legend.onAdd = function() {
+                    const div = L.DomUtil.create('div', 'legend');
+                    div.innerHTML = `
+                        <h4>📈 Mortality (%)</h4>
+                        <div class="legend-item"><span class="legend-color" style="background:#fee5d9;"></span> ≤10%</div>
+                        <div class="legend-item"><span class="legend-color" style="background:#fcbba1;"></span> 11–20%</div>
+                        <div class="legend-item"><span class="legend-color" style="background:#fc9272;"></span> 21–30%</div>
+                        <div class="legend-item"><span class="legend-color" style="background:#fb6a4a;"></span> 31–40%</div>
+                        <div class="legend-item"><span class="legend-color" style="background:#ef3b2c;"></span> 41–50%</div>
+                        <div class="legend-item"><span class="legend-color" style="background:#a50f15;"></span> >50%</div>
+                        <hr style="margin: 8px 0;">
+                        <div class="legend-item"><span class="legend-color" style="background:#cccccc;"></span> No data</div>
+                    `;
+                    return div;
+                };
+                legend.addTo(map);
+
+                // Slider
+                const slider = document.getElementById('timeline-slider');
+                const yearDisplay = document.getElementById('year-display');
+                noUiSlider.create(slider, {
+                    start: [1932],
+                    connect: [true, false],
+                    step: 1,
+                    range: { min: 1931, max: 1934 },
+                    format: { to: v => Math.round(v), from: v => Math.round(v) }
+                });
+                slider.noUiSlider.on('update', (values) => {
+                    updateMapColors(values[0]);
+                });
+            })
+            .catch(error => {
+                console.error('Failed to load GeoJSON:', error);
+                if (loadingDiv) loadingDiv.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `
+                    <strong>❌ Could not load local GeoJSON file.</strong><br>
+                    Make sure you have uploaded a file named <code>ukraine_oblasts.geojson</code> to the <strong>same folder</strong> as this HTML file.<br>
+                    <br>
+                    <strong>Current URL attempted:</strong> ${geojsonUrl}<br>
+                    <br>
+                    If your file has a different name, edit the <code>geojsonUrl</code> variable in the code (line ~150).<br>
+                    <br>
+                    <strong>To download the correct GeoJSON:</strong><br>
+                    1. Go to <a href="https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/gbOpen/UKR/ADM1" target="_blank">geoBoundaries ADM1 page</a><br>
+                    2. Click on <code>geoBoundaries-UKR-ADM1.geojson</code><br>
+                    3. Click the <strong>Raw</strong> button and save the file.<br>
+                    4. Rename it to <code>ukraine_oblasts.geojson</code> and upload to this folder.
+                `;
+                document.getElementById('map').innerHTML = '';
+                document.getElementById('map').appendChild(errorDiv);
+            });
+    });
+</script>
+</body>
+</html>

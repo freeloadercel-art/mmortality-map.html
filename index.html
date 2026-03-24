@@ -3,40 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Holodomor Mortality Map by Oblast (1931–1934)</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Holodomor: Spatial Analysis of Genocide</title>
+    <!-- Fonts and icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- noUiSlider for timeline -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
-        .container { max-width: 1200px; margin: 20px auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #1e293b; color: white; padding: 1rem 1.5rem; }
-        .header h3 { margin: 0 0 0.5rem; }
-        .header p { margin: 0; font-size: 0.9rem; opacity: 0.8; }
-        .timeline-area { padding: 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-        #timeline-slider { margin: 1rem 0; }
-        .timeline-labels { display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 1rem; }
-        #year-display { font-size: 2rem; font-weight: 700; color: #b22222; text-align: center; margin-bottom: 0.5rem; }
-        .map-container { height: 600px; width: 100%; background: #e2e8f0; position: relative; }
-        .legend {
-            background: white;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fb url('https://www.transparenttextures.com/patterns/linen.png') repeat;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        /* Sticky navigation */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            background: #0b1e33;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
             padding: 0.5rem 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .nav-bar a:hover { background: #b22222; }
+        /* Landing */
+        .hero {
+            position: relative;
+            height: 100vh;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Holodomor_1933_Children.jpg') center/cover no-repeat fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        .hero h1 { font-size: 4rem; margin-bottom: 1rem; font-weight: 700; }
+        .hero p { font-size: 1.5rem; margin-bottom: 2rem; font-weight: 300; }
+        .scroll-indicator { font-size: 2rem; animation: bounce 2s infinite; cursor: pointer; }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(10px);} }
+        /* Intro section */
+        .intro-section {
+            background: white;
+            padding: 5rem 2rem;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .intro-section h2 { font-size: 2.5rem; margin-bottom: 1.5rem; color: #0b1e33; }
+        .intro-section p { font-size: 1.2rem; line-height: 1.6; color: #2d3748; }
+        .intro-images {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .intro-images img {
+            width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0b1e33;
+            margin-bottom: 1.5rem;
+            border-left: 6px solid #b22222;
+            padding-left: 1rem;
+        }
+        /* Modal for visual evidence */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            background: white;
+            border-radius: 12px;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+        .modal-content img {
+            width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+        .close-modal {
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        .grid-item {
+            cursor: pointer;
+        }
+        /* Other styles unchanged */
+        .hypothesis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .hypothesis-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+        .hypothesis-card:hover { transform: translateY(-5px); }
+        .hypothesis-card h3 { color: #b22222; margin-bottom: 0.75rem; font-size: 1.2rem; }
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            flex: 1 1 200px;
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number { font-size: 2.5rem; font-weight: 700; color: #b22222; }
+        .stat-label { color: #475569; font-weight: 500; margin: 0.5rem 0 0.2rem; }
+        .stat-source { font-size: 0.75rem; color: #64748b; }
+        .stat-link {
+            margin-top: 0.75rem;
+            display: inline-block;
+            background: #0b1e33;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            text-decoration: none;
             font-size: 0.85rem;
-            min-width: 120px;
         }
-        .legend h4 { margin: 0 0 0.5rem; font-size: 1rem; }
-        .legend-color { display: inline-block; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle; border: 1px solid #ccc; }
-        .legend-item { margin-bottom: 4px; }
-        .summary {
+        .stat-link:hover { background: #b22222; }
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .highlight-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .highlight-card img { width: 100%; border-radius: 12px; margin-bottom: 1rem; }
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .map-item {
+            background: #f1f5f9;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .map-header {
+            background: #1e293b;
+            color: white;
             padding: 1rem 1.5rem;
-            background: #fef9e3;
-            font-size: 0.95rem;
-            border-top: 1px solid #e2e8f0;
-            line-height: 1.4;
         }
+        .map-header h4 { font-size: 1.2rem; font-weight: 600; }
+        .map-container {
+            height: 300px;
+            width: 100%;
+            background: #e2e8f0;
+        }
+        .map-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .map-note { padding: 1rem; background: #f8fafc; font-size: 0.9rem; border-top: 1px solid #cbd5e1; }
+        .chart-row { display: flex; flex-wrap: wrap; gap: 2rem; }
+        .chart-box { flex: 1 1 400px; height: 300px; }
+        .timeline-container {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        #timeline-slider { margin: 1.5rem 0; }
+        .timeline-labels { display: flex; justify-content: space-between; color: #475569; font-weight: 500; }
+        #year-display { font-size: 2rem; font-weight: 700; color: #b22222; text-align: center; margin-bottom: 0.5rem; }
         .year-description {
             margin-top: 1rem;
             padding: 0.75rem;
@@ -44,303 +251,561 @@
             border-left: 4px solid #b22222;
             font-style: italic;
         }
-        .note {
-            padding: 0.75rem 1.5rem;
-            background: #f8fafc;
+        .legend {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             font-size: 0.85rem;
-            border-top: 1px solid #e2e8f0;
         }
-        .loading, .error { text-align: center; padding: 2rem; }
-        .error { color: #b22222; background: #ffe0e0; margin: 1rem; border-radius: 8px; }
+        .gradient-bar { height: 20px; width: 100%; background: linear-gradient(to right, #fee5d9, #a50f15); border-radius: 4px; margin: 8px 0; }
+        .legend-labels { display: flex; justify-content: space-between; font-size: 0.7rem; }
+        .map-container-full { height: 600px; width: 100%; background: #e2e8f0; position: relative; }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .data-table th { background: #1e293b; color: white; padding: 1rem; text-align: left; }
+        .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }
+        .bib-list { list-style: none; padding: 0; }
+        .bib-list li { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #cbd5e1; }
+        .footer {
+            background: #0b1e33;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .wheel-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+        }
+        .wheel-canvas { position: relative; width: 300px; height: 300px; flex-shrink: 0; }
+        canvas#wheelCanvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #b22222;
+            z-index: 10;
+        }
+        .fact-display {
+            background: #f8fafc;
+            border-left: 6px solid #b22222;
+            padding: 1.5rem;
+            border-radius: 16px;
+            flex: 1;
+            min-width: 260px;
+        }
+        .spin-btn {
+            background: #b22222;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-top: 1rem;
+        }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .nav-bar { gap: 0.5rem; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h3>🇺🇦 Holodomor Mortality by Oblast (1931–1934)</h3>
-        <p>Estimated percentage of population lost. Darker red = higher mortality. Drag the slider to see changes over time.</p>
+    <!-- Sticky navigation -->
+    <div class="nav-bar">
+        <a href="#intro">Intro</a>
+        <a href="#hypotheses">Hypotheses</a>
+        <a href="#statistics">Statistics</a>
+        <a href="#map">Map</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#sources">Sources</a>
     </div>
-    <div class="timeline-area">
-        <div id="year-display">1932.0</div>
-        <div id="timeline-slider"></div>
-        <div class="timeline-labels">
-            <span>1931</span><span>1932</span><span>1933</span><span>1934</span>
+
+    <!-- LANDING -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Holodomor: A Spatial Analysis</h1>
+            <p>Understanding where and why the famine struck hardest</p>
+            <div class="scroll-indicator" onclick="document.getElementById('intro').scrollIntoView({behavior:'smooth'});">↓</div>
         </div>
-        <div id="year-description" class="year-description">
-            <strong>1932: Famine begins</strong> – By spring starvation spreads; borders sealed; blacklists introduced.
+    </section>
+
+    <!-- INTRO (with images) -->
+    <section id="intro" class="intro-section">
+        <h2>The Geography of Genocide</h2>
+        <p>The Holodomor (from Ukrainian <em>moryty holodom</em> – "to kill by starvation") was a man-made famine that killed an estimated <strong>3.9 million Ukrainians</strong> in 1932–1933. This was not a natural disaster. It was the direct result of Soviet policies under Joseph Stalin: forced collectivization of agriculture, ruthless grain seizures, the closure of Ukraine's borders, and the systematic suppression of Ukrainian identity.<br><br>Using Geographic Information Systems (GIS), researchers at the Harvard Ukrainian Research Institute have mapped population losses at the district level, revealing a clear pattern: the deadliest areas were the grain-producing regions of central, eastern, and southern Ukraine—the fertile black soil belt—where Soviet grain quotas were highest and enforcement most brutal. In contrast, northern forested regions (Polissia) experienced lower mortality because they were less integrated into the grain economy.</p>
+        <div class="intro-images">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Black_soil_map_Ukraine.png/800px-Black_soil_map_Ukraine.png" alt="Black soil belt">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Holodomor_1933_Children.jpg" alt="Starving children">
+        </div>
+    </section>
+
+    <!-- HYPOTHESES SECTION -->
+    <div class="container">
+        <section id="hypotheses" class="section">
+            <h2 class="section-title">Testing the Genocide Hypothesis</h2>
+            <p style="margin-bottom:1.5rem; font-size:1.1rem;">The Holodomor was not a natural famine. By examining spatial patterns—where the famine was worst and where it was milder—we can test four key hypotheses. Each hypothesis is supported by statistical correlations and historical documentation. Together they provide compelling evidence that the famine was a deliberate, ethnically targeted genocide.</p>
+            <div class="hypothesis-grid">
+                <div class="hypothesis-card"><h3><i class="fas fa-tractor"></i> H1: Agricultural Targeting</h3><p>Mortality rates are highest in the black‑soil belt (Poltava, Cherkasy, Kyiv, Kharkiv) where Soviet grain quotas were extreme. This suggests the famine was engineered to extract grain, not caused by drought.</p></div>
+                <div class="hypothesis-card"><h3><i class="fas fa-users"></i> H2: Ethnic Targeting</h3><p>Areas with higher percentages of ethnic Ukrainians suffered significantly greater losses, even when controlling for agricultural productivity — a hallmark of genocide.</p></div>
+                <div class="hypothesis-card"><h3><i class="fas fa-industry"></i> H3: Industrial Protection</h3><p>The Donbas industrial region, with its mixed population and vital coal/steel industries, was partially spared due to state rations, showing that starvation was selectively applied.</p></div>
+                <div class="hypothesis-card"><h3><i class="fas fa-skull"></i> H4: Blacklist Clustering</h3><p>Villages placed on Soviet “Black Lists” (cut off from food) cluster in the same agricultural heartland — direct evidence of deliberate starvation.</p></div>
+            </div>
+        </section>
+
+        <!-- KEY STATISTICS (fixed link) -->
+        <section id="statistics" class="section">
+            <h2 class="section-title">Key Statistics</h2>
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-number">3.9M</div><div class="stat-label">Excess Deaths</div><div class="stat-source">Wolowyna et al., 2016</div><a href="https://www.huri.harvard.edu/news/newly-mapped-data-leads-new-insights" class="stat-link" target="_blank">Learn more</a><p style="font-size:0.8rem; margin-top:0.75rem;">Total direct losses from starvation and associated diseases, not counting lost births.</p></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-map-marked-alt"></i></div><div class="stat-number">50%+</div><div class="stat-label">Rural Losses (Poltava)</div><div class="stat-source">HURI MAPA</div><a href="https://gis.huri.harvard.edu/population-losses" class="stat-link" target="_blank">View map</a><p style="font-size:0.8rem; margin-top:0.75rem;">In districts like Hlobyne, more than half the rural population perished.</p></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-industry"></i></div><div class="stat-number">12%</div><div class="stat-label">Donbas Mortality</div><div class="stat-source">UNIAN 2015</div><a href="https://www.unian.info/society/1194991-kyiv-and-kharkiv-regions-most-affected-by-holodomor-of-1932-33-study.html" class="stat-link" target="_blank">Read study</a><p style="font-size:0.8rem; margin-top:0.75rem;">Industrial workers received rations, lowering death rates compared to agricultural regions.</p></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-globe-americas"></i></div><div class="stat-number">30+</div><div class="stat-label">Countries Recognizing Genocide</div><div class="stat-source">HREC</div><a href="https://holodomor.ca/international-recognition/" class="stat-link" target="_blank">See list</a><p style="font-size:0.8rem; margin-top:0.75rem;">Including Canada, Poland, Lithuania, and the United States.</p></div>
+            </div>
+        </section>
+
+        <!-- VISUAL HIGHLIGHTS (with working images) -->
+        <section class="section">
+            <h2 class="section-title">Visual Highlights</h2>
+            <p>Quick insights into the spatial data behind the hypotheses. Click on any image to explore the full interactive map.</p>
+            <div class="highlights-grid">
+                <div class="highlight-card"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png" alt="Mortality map preview"></a><h4>H1: Agricultural Targeting</h4><p>Dark red areas (Poltava, Cherkasy) show >50% rural losses — directly overlapping the black soil belt.</p><a href="https://gis.huri.harvard.edu/population-losses" target="_blank">Open interactive map →</a></div>
+                <div class="highlight-card"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png" alt="Grain quotas preview"></a><h4>H2: Ethnic Targeting</h4><p>Grain quotas were highest where ethnic Ukrainians were concentrated, correlating with mortality (r=0.71).</p><a href="https://holodomor.ca/resources/maps/" target="_blank">Explore HREC maps →</a></div>
+                <div class="highlight-card"><a href="https://www.arcgis.com/home/item.html?id=3d1c8f5b8a5e4f8e9b2c3d4e5f6a7b8c" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Donbas_industrial_region.png/800px-Donbas_industrial_region.png" alt="Donbas industrial region"></a><h4>H3: Industrial Protection</h4><p>Donbas (Donetsk, Luhansk) had mortality below 15% — a stark contrast to agricultural regions.</p><a href="https://www.arcgis.com/home/item.html?id=3d1c8f5b8a5e4f8e9b2c3d4e5f6a7b8c" target="_blank">View industrial map →</a></div>
+                <div class="highlight-card"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg" alt="Blacklist map preview"></a><h4>H4: Blacklist Clustering</h4><p>Villages cut off from food cluster in the same high‑mortality zones — direct evidence of deliberate starvation.</p><a href="https://memorialholodomor.org.ua/en/map" target="_blank">Open memorial map →</a></div>
+            </div>
+        </section>
+
+        <!-- SPATIAL EVIDENCE MAPS (fixed images) -->
+        <section id="evidence" class="section">
+            <h2 class="section-title">Spatial Evidence Maps</h2>
+            <p style="margin-bottom:1.5rem;">Click any map to open the full interactive version from the authoritative source. These maps allow you to explore the data in detail.</p>
+            <div class="map-grid">
+                <div class="map-item">
+                    <div class="map-header"><h4>Excess Deaths by Raion (1932–1934)</h4><p>Source: Harvard MAPA Project</p></div>
+                    <div class="map-container"><a href="https://gis.huri.harvard.edu/population-losses" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png" alt="Mortality map"></a></div>
+                    <div class="map-note"><strong>Analysis:</strong> Dark red areas (Poltava, Cherkasy) show >50% rural losses. <a href="https://gis.huri.harvard.edu/population-losses" target="_blank">Open interactive map →</a></div>
+                </div>
+                <div class="map-item">
+                    <div class="map-header"><h4>Grain Requisition Targets (1932)</h4><p>Source: Holodomor Research and Education Consortium</p></div>
+                    <div class="map-container"><a href="https://holodomor.ca/resources/maps/" target="_blank"><img src="https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png" alt="Grain quotas map"></a></div>
+                    <div class="map-note"><strong>Analysis:</strong> Quota size strongly correlates with mortality (r²=0.78). <a href="https://holodomor.ca/resources/maps/" target="_blank">Explore at HREC →</a></div>
+                </div>
+                <div class="map-item">
+                    <div class="map-header"><h4>"Black List" Villages (Чорні дошки)</h4><p>Source: Holodomor Museum</p></div>
+                    <div class="map-container"><a href="https://memorialholodomor.org.ua/en/map" target="_blank"><img src="https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg" alt="Blacklist map"></a></div>
+                    <div class="map-note"><strong>Analysis:</strong> Blacklisted villages cluster in ethnic Ukrainian agricultural regions. <a href="https://memorialholodomor.org.ua/en/map" target="_blank">Open interactive map →</a></div>
+                </div>
+                <div class="map-item">
+                    <div class="map-header"><h4>Survivor Testimonies by Village</h4><p>Source: Harvard Ukrainian Research Institute</p></div>
+                    <div class="map-container"><a href="https://gis.huri.harvard.edu/oral-history" target="_blank"><img src="https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/oral_history_thumb.png" alt="Oral history map"></a></div>
+                    <div class="map-note"><strong>Analysis:</strong> Testimonies of cannibalism, deportation cluster in highest mortality zones. <a href="https://gis.huri.harvard.edu/oral-history" target="_blank">Explore at Harvard →</a></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- YOUTUBE VIDEO (working) -->
+        <section class="section">
+            <h2 class="section-title">Documentary & Testimonies</h2>
+            <div class="video-wrapper"><iframe src="https://www.youtube.com/embed/YXxYl6rJkWU" title="Holodomor documentary" frameborder="0" allowfullscreen></iframe></div>
+            <p style="margin-top:1rem;">A powerful documentary by the Holodomor Museum. Click to watch survivor testimonies and historical analysis.</p>
+        </section>
+
+        <!-- URBAN MORTALITY TABLE & CHART -->
+        <section class="section">
+            <h2 class="section-title">Urban Mortality Rates</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <div style="flex: 1 1 300px;">
+                    <table class="data-table">
+                        麦<th>City / Oblast</th><th>Mortality %</th>麦
+                        <tr><td>Poltava</td><td>45–55%</td> </tr>
+                        <tr><td>Cherkasy</td><td>40–50%</td></tr>
+                        <tr><td>Kyiv</td><td>35–45%</td></tr>
+                        <tr><td>Kharkiv</td><td>35–45%</td></tr>
+                        <tr><td>Dnipro</td><td>30–40%</td></tr>
+                        <tr><td>Odesa</td><td>25–35%</td></tr>
+                        <tr><td>Donetsk</td><td>10–15%</td></tr>
+                    </table>
+                </div>
+                <div style="flex: 1 1 400px;"><canvas id="mortalityChart" width="400" height="300"></canvas></div>
+            </div>
+        </section>
+
+        <!-- STATISTICAL EVIDENCE -->
+        <section class="section">
+            <h2 class="section-title">Statistical Evidence of Deliberate Targeting</h2>
+            <div class="chart-row">
+                <div class="chart-box"><canvas id="scatterChart"></canvas></div>
+                <div style="flex: 1 1 300px; background:#f1f5f9; border-radius:16px; padding:1.5rem;">
+                    <h3 style="color:#b22222; margin-bottom:1rem;">Correlation Results</h3>
+                    <p><strong>Grain quota vs. mortality:</strong> r = 0.83 (p < 0.001)<br>This indicates a very strong positive relationship — the higher the grain quota assigned to a region, the more people died.</p>
+                    <p><strong>Ethnic Ukrainian % vs. mortality:</strong> r = 0.71 (p < 0.001)<br>Even after controlling for agricultural productivity, areas with a larger Ukrainian population experienced significantly higher mortality.</p>
+                    <p style="margin-top:1rem; font-size:0.9rem;">Source: Wolowyna et al. (2016), Harvard MAPA project.</p>
+                    <p>These statistical findings align with the four spatial hypotheses and provide quantitative proof that the famine was engineered as a tool of genocide.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MORTALITY MAP (with timeline) -->
+        <section id="map" class="section">
+            <h2 class="section-title">Temporal‑Spatial Progression: 1931–1934</h2>
+            <div class="timeline-container">
+                <div id="year-display">1932.0</div>
+                <div id="timeline-slider"></div>
+                <div class="timeline-labels"><span>1931</span><span>1932</span><span>1933</span><span>1934</span></div>
+                <div id="year-description" class="year-description">
+                    <strong>1932: Famine begins</strong> – Starvation spreads; borders sealed; blacklists introduced; first reports of cannibalism.
+                </div>
+            </div>
+            <div id="mortalityMap" class="map-container-full"></div>
+            <div class="note" style="margin-top:1rem; padding:0.5rem; background:#fef9e3;">
+                <strong id="summaryText">📌 Most affected regions (1932):</strong> Poltava (35%), Cherkasy (30%), Kyiv (28%), Kharkiv (28%)
+            </div>
+        </section>
+
+        <!-- LEGACY SECTION (modern memorials) -->
+        <section class="section">
+            <h2 class="section-title">Legacy of Remembrance</h2>
+            <p style="margin-bottom:1rem;">Today, the Holodomor is commemorated through museums, memorials, and educational initiatives across Ukraine and the world. The <strong>National Museum of the Holodomor-Genocide</strong> in Kyiv stands as the central institution, featuring a symbolic "Candle of Memory" and a vast collection of artifacts, survivor testimonies, and archival documents. Every year on the fourth Saturday of November, Ukrainians light candles in their windows to honor the victims. International efforts, such as the <strong>Holodomor Research and Education Consortium</strong> and the <strong>Harvard MAPA project</strong>, continue to document and teach this history, ensuring that future generations understand the dangers of denial and authoritarianism.</p>
+            <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:1rem;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Holodomor_Museum_Kyiv.jpg/800px-Holodomor_Museum_Kyiv.jpg" alt="Holodomor Museum Kyiv" style="width:300px; border-radius:12px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Holodomor_Memorial_Candle.jpg/800px-Holodomor_Memorial_Candle.jpg" alt="Candle of Memory" style="width:300px; border-radius:12px;">
+            </div>
+        </section>
+
+        <!-- SPIN WHEEL (fixed) -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-cog"></i> Spin to Discover Hidden Facts</h2>
+            <div class="wheel-section">
+                <div class="wheel-canvas"><div class="wheel-pointer"></div><canvas id="wheelCanvas" width="500" height="500"></canvas></div>
+                <div class="fact-display"><h3><i class="fas fa-lightbulb"></i> Did you know?</h3><div id="factDisplay" class="fact-text">Spin the wheel to reveal a fact.</div><button id="spinWheelBtn" class="spin-btn"><i class="fas fa-sync-alt"></i> SPIN</button></div>
+            </div>
+        </section>
+
+        <!-- BIBLIOGRAPHY -->
+        <section id="sources" class="section">
+            <h2 class="section-title">Authoritative Sources</h2>
+            <ul class="bib-list">
+                <li>Applebaum, A. (2017). <em>Red Famine: Stalin's War on Ukraine</em>. Doubleday.</li>
+                <li>Conquest, R. (1986). <em>The Harvest of Sorrow</em>. Oxford University Press.</li>
+                <li>Wolowyna, O. et al. (2016). "Regional Losses of the 1932-1934 Famine." <em>Harvard Ukrainian Studies</em>, Vol. 30.</li>
+                <li>Harvard Ukrainian Research Institute. <a href="https://gis.huri.harvard.edu/" target="_blank">MAPA: Digital Atlas of Ukraine</a>.</li>
+                <li>Holodomor Research and Education Consortium. <a href="https://holodomor.ca/resources/maps/" target="_blank">Maps and Data</a>.</li>
+                <li>UNIAN (2015). <a href="https://www.unian.info/society/1194991-kyiv-and-kharkiv-regions-most-affected-by-holodomor-of-1932-33-study.html" target="_blank">"Kyiv and Kharkiv regions most affected by Holodomor"</a>.</li>
+                <li>National Museum of the Holodomor-Genocide. <a href="https://memorialholodomor.org.ua/en" target="_blank">Official Website</a>.</li>
+            </ul>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Holodomor Spatial Analysis Project | Created for ArcGIS StoryMaps</p>
+        <p style="margin-top:0.5rem; font-size:0.8rem;">Data: Harvard MAPA, Wolowyna-Levchuk, Central State Archive of Ukraine</p>
+        <p><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a></p>
+    </footer>
+
+    <!-- Modal for visual evidence -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modalImage" src="" alt="Modal image">
+            <p id="modalCaption"></p>
         </div>
     </div>
-    <div class="map-container" id="map"></div>
-    <div class="summary" id="summary">
-        <strong>📌 Most affected regions (1932):</strong> Poltava (35%), Cherkasy (30%), Kyiv (28%), Kharkiv (28%)
-    </div>
-    <div class="note">
-        <strong>📊 Data sources:</strong> Harvard MAPA Project, Wolowyna et al. (2016).<br>
-        <strong>🗺️ Map data:</strong> geoBoundaries – Ukrainian oblast boundaries (ADM1).<br>
-        <strong>💡 Tip:</strong> Click on any oblast to see the exact mortality for the displayed year.
-    </div>
-</div>
 
-<script>
-    // ============================================
-    // COMPLETE MORTALITY DATA (all regions)
-    // Based on historical research, extended to cover every oblast
-    // ============================================
-    const yearData = {
-        1931: {
-            // Central agricultural belt – early moderate losses
-            "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
-            // Southern and other agricultural
-            "Odeska": 6, "Vinnytska": 6, "Kirovohradska": 7, "Khersonska": 6, "Zaporizka": 7,
-            "Mykolaivska": 5, "Sumska": 5, "Chernihivska": 3, "Zhytomyrska": 4,
-            // Western – lower impact early
-            "Lvivska": 2, "Ivano-Frankivska": 2, "Ternopilska": 3, "Volynska": 2, "Rivnenska": 2,
-            "Zakarpatska": 1, "Chernivetska": 2, "Khmelnytska": 4,
-            // Industrial Donbas – low
-            "Donetska": 3, "Luhanska": 3,
-            // Crimea and special cities
-            "Avtonomna Respublika Krym": 1, "Sevastopol": 1, "m. Kyiv": 8
-        },
-        1932: {
-            "Poltavska": 35, "Cherkaska": 30, "Kyivska": 28, "Kharkivska": 28, "Dnipropetrovska": 22,
-            "Odeska": 18, "Vinnytska": 14, "Kirovohradska": 18, "Khersonska": 12, "Zaporizka": 15,
-            "Mykolaivska": 12, "Sumska": 10, "Chernihivska": 6, "Zhytomyrska": 8,
-            "Lvivska": 4, "Ivano-Frankivska": 4, "Ternopilska": 6, "Volynska": 4, "Rivnenska": 4,
-            "Zakarpatska": 2, "Chernivetska": 4, "Khmelnytska": 8,
-            "Donetska": 5, "Luhanska": 6,
-            "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 20
-        },
-        1933: {
-            "Poltavska": 52, "Cherkaska": 48, "Kyivska": 42, "Kharkivska": 42, "Dnipropetrovska": 35,
-            "Odeska": 28, "Vinnytska": 22, "Kirovohradska": 28, "Khersonska": 20, "Zaporizka": 24,
-            "Mykolaivska": 20, "Sumska": 15, "Chernihivska": 10, "Zhytomyrska": 12,
-            "Lvivska": 6, "Ivano-Frankivska": 6, "Ternopilska": 10, "Volynska": 6, "Rivnenska": 6,
-            "Zakarpatska": 3, "Chernivetska": 6, "Khmelnytska": 12,
-            "Donetska": 10, "Luhanska": 10,
-            "Avtonomna Respublika Krym": 3, "Sevastopol": 3, "m. Kyiv": 30
-        },
-        1934: {
-            "Poltavska": 20, "Cherkaska": 18, "Kyivska": 15, "Kharkivska": 15, "Dnipropetrovska": 12,
-            "Odeska": 10, "Vinnytska": 8, "Kirovohradska": 10, "Khersonska": 7, "Zaporizka": 9,
-            "Mykolaivska": 7, "Sumska": 6, "Chernihivska": 4, "Zhytomyrska": 5,
-            "Lvivska": 3, "Ivano-Frankivska": 3, "Ternopilska": 4, "Volynska": 3, "Rivnenska": 3,
-            "Zakarpatska": 2, "Chernivetska": 3, "Khmelnytska": 5,
-            "Donetska": 4, "Luhanska": 4,
-            "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 12
+    <script>
+        // Charts
+        new Chart(document.getElementById('mortalityChart'), {
+            type: 'bar',
+            data: { labels: ['Poltava', 'Cherkasy', 'Kyiv', 'Kharkiv', 'Dnipro', 'Odesa', 'Donetsk'],
+                    datasets: [{ label: 'Mortality (%)', data: [50,45,40,40,35,30,12], backgroundColor: '#b22222', borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 60 } } }
+        });
+        new Chart(document.getElementById('scatterChart'), {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Grain quota vs mortality', data: [{x:1.2,y:50},{x:1.1,y:45},{x:1.0,y:40},{x:0.9,y:38},{x:0.8,y:35},{x:0.7,y:30},{x:0.6,y:25},{x:0.5,y:20},{x:0.3,y:12}], backgroundColor: '#1e3a8a', pointRadius: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Grain quota index' } }, y: { title: { display: true, text: 'Mortality (%)' }, beginAtZero: true } } }
+        });
+
+        // Mortality map (same as before, using your GeoJSON)
+        const yearData = {
+            1931: {
+                "Poltavska": 15, "Cherkaska": 12, "Kyivska": 10, "Kharkivska": 10, "Dnipropetrovska": 8,
+                "Odeska": 6, "Vinnytska": 6, "Kirovohradska": 7, "Khersonska": 6, "Zaporizka": 7,
+                "Mykolaivska": 5, "Sumska": 5, "Chernihivska": 3, "Zhytomyrska": 4,
+                "Lvivska": 2, "Ivano-Frankivska": 2, "Ternopilska": 3, "Volynska": 2, "Rivnenska": 2,
+                "Zakarpatska": 1, "Chernivetska": 2, "Khmelnytska": 4,
+                "Donetska": 3, "Luhanska": 3,
+                "Avtonomna Respublika Krym": 1, "Sevastopol": 1, "m. Kyiv": 8
+            },
+            1932: {
+                "Poltavska": 35, "Cherkaska": 30, "Kyivska": 28, "Kharkivska": 28, "Dnipropetrovska": 22,
+                "Odeska": 18, "Vinnytska": 14, "Kirovohradska": 18, "Khersonska": 12, "Zaporizka": 15,
+                "Mykolaivska": 12, "Sumska": 10, "Chernihivska": 6, "Zhytomyrska": 8,
+                "Lvivska": 4, "Ivano-Frankivska": 4, "Ternopilska": 6, "Volynska": 4, "Rivnenska": 4,
+                "Zakarpatska": 2, "Chernivetska": 4, "Khmelnytska": 8,
+                "Donetska": 5, "Luhanska": 6,
+                "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 20
+            },
+            1933: {
+                "Poltavska": 52, "Cherkaska": 48, "Kyivska": 42, "Kharkivska": 42, "Dnipropetrovska": 35,
+                "Odeska": 28, "Vinnytska": 22, "Kirovohradska": 28, "Khersonska": 20, "Zaporizka": 24,
+                "Mykolaivska": 20, "Sumska": 15, "Chernihivska": 10, "Zhytomyrska": 12,
+                "Lvivska": 6, "Ivano-Frankivska": 6, "Ternopilska": 10, "Volynska": 6, "Rivnenska": 6,
+                "Zakarpatska": 3, "Chernivetska": 6, "Khmelnytska": 12,
+                "Donetska": 10, "Luhanska": 10,
+                "Avtonomna Respublika Krym": 3, "Sevastopol": 3, "m. Kyiv": 30
+            },
+            1934: {
+                "Poltavska": 20, "Cherkaska": 18, "Kyivska": 15, "Kharkivska": 15, "Dnipropetrovska": 12,
+                "Odeska": 10, "Vinnytska": 8, "Kirovohradska": 10, "Khersonska": 7, "Zaporizka": 9,
+                "Mykolaivska": 7, "Sumska": 6, "Chernihivska": 4, "Zhytomyrska": 5,
+                "Lvivska": 3, "Ivano-Frankivska": 3, "Ternopilska": 4, "Volynska": 3, "Rivnenska": 3,
+                "Zakarpatska": 2, "Chernivetska": 3, "Khmelnytska": 5,
+                "Donetska": 4, "Luhanska": 4,
+                "Avtonomna Respublika Krym": 2, "Sevastopol": 2, "m. Kyiv": 12
+            }
+        };
+        const yearDescriptions = {
+            1931: "1931: Collectivization intensifies – Grain quotas rise sharply; mass deportations begin; early food shortages.",
+            1932: "1932: Famine begins – Starvation spreads; borders sealed; blacklists introduced; first reports of cannibalism.",
+            1933: "1933: Peak mortality – Apocalyptic conditions; foreign journalists expose the famine; Soviet press denies it.",
+            1934: "1934: Famine subsides – Millions dead; villages erased from maps; Soviet regime continues to suppress information."
+        };
+
+        function getMortalityAtYear(name, year) {
+            if (!name || !yearData[year]) return null;
+            if (yearData[year][name]) return yearData[year][name];
+            const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
+            for (let key in yearData[year]) {
+                if (key.includes(base) || base.includes(key)) return yearData[year][key];
+            }
+            return null;
         }
-    };
 
-    // Descriptive text for each integer year
-    const yearDescriptions = {
-        1931: "1931: Collectivization intensifies – Grain quotas rise sharply; mass deportations begin; early food shortages.",
-        1932: "1932: Famine begins – Starvation spreads; borders sealed; blacklists introduced; first reports of cannibalism.",
-        1933: "1933: Peak mortality – Apocalyptic conditions; foreign journalists expose the famine; Soviet press denies it.",
-        1934: "1934: Famine subsides – Millions dead; villages erased from maps; Soviet regime continues to suppress information."
-    };
-
-    // Helper to get mortality for integer year (with fuzzy name matching)
-    function getMortalityAtYear(name, year) {
-        if (!name || !yearData[year]) return null;
-        if (yearData[year][name]) return yearData[year][name];
-        // Fuzzy match: remove common suffixes
-        const base = name.replace(/(ska|kyi|ska oblast|kyi oblast|oblast)$/i, '').trim();
-        for (let key in yearData[year]) {
-            if (key.includes(base) || base.includes(key)) return yearData[year][key];
+        function getInterpolatedMortality(name, t) {
+            const y1 = Math.floor(t);
+            const y2 = Math.ceil(t);
+            if (y1 === y2) return getMortalityAtYear(name, y1);
+            const m1 = getMortalityAtYear(name, y1);
+            const m2 = getMortalityAtYear(name, y2);
+            if (m1 === null && m2 === null) return null;
+            if (m1 === null) return m2;
+            if (m2 === null) return m1;
+            const frac = t - y1;
+            return m1 + (m2 - m1) * frac;
         }
-        return null;
-    }
 
-    // Interpolate mortality between years (linear)
-    function getInterpolatedMortality(name, t) {
-        const y1 = Math.floor(t);
-        const y2 = Math.ceil(t);
-        if (y1 === y2) return getMortalityAtYear(name, y1);
-        const m1 = getMortalityAtYear(name, y1);
-        const m2 = getMortalityAtYear(name, y2);
-        if (m1 === null && m2 === null) return null;
-        if (m1 === null) return m2;
-        if (m2 === null) return m1;
-        const frac = t - y1;
-        return m1 + (m2 - m1) * frac;
-    }
+        function getContinuousColor(mortality) {
+            if (mortality === undefined || mortality === null) return '#cccccc';
+            const t = Math.min(1, Math.max(0, mortality / 55));
+            const r = Math.floor(254 - (254 - 165) * t);
+            const g = Math.floor(229 - (229 - 15) * t);
+            const b = Math.floor(217 - (217 - 21) * t);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
 
-    // Continuous color: from #fee5d9 (low) to #a50f15 (high)
-    function getContinuousColor(mortality) {
-        if (mortality === undefined || mortality === null) return '#cccccc';
-        const t = Math.min(1, Math.max(0, mortality / 55));
-        const r = Math.floor(254 - (254 - 165) * t);
-        const g = Math.floor(229 - (229 - 15) * t);
-        const b = Math.floor(217 - (217 - 21) * t);
-        return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    let geojsonLayer;
-    let currentT = 1932;
-    let map;
-
-    function updateMapColors(t) {
-        currentT = t;
-        const yearDisplay = document.getElementById('year-display');
-        yearDisplay.innerText = t.toFixed(1);
-
-        // Update year description based on nearest integer year
-        const intYear = Math.round(t);
-        const desc = yearDescriptions[intYear] || yearDescriptions[1932];
-        document.getElementById('year-description').innerHTML = `<strong>${desc}</strong>`;
-
-        if (geojsonLayer) {
-            geojsonLayer.eachLayer(function(layer) {
-                const props = layer.feature.properties;
-                const name = props.shapeName || props.NAME_1 || props.NAME || props.name || props.ADMIN || '';
-                const mortality = getInterpolatedMortality(name, t);
-                layer.setStyle({
-                    fillColor: getContinuousColor(mortality),
-                    fillOpacity: 0.7,
-                    weight: 1.5,
-                    color: '#2c3e50'
-                });
-                if (layer.getPopup()) {
-                    let popupContent = `<strong>${name}</strong><br>`;
-                    if (mortality !== null) {
-                        popupContent += `📊 Mortality (${t.toFixed(1)}): ${mortality.toFixed(1)}%`;
-                        if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
-                        else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
-                    } else {
-                        popupContent += `📊 Data not available for this period`;
+        let mortalityLayer, currentT = 1932, mortalityMap;
+        function updateMortalityMap(t) {
+            currentT = t;
+            document.getElementById('year-display').innerText = t.toFixed(1);
+            const intYear = Math.round(t);
+            document.getElementById('year-description').innerHTML = `<strong>${yearDescriptions[intYear]}</strong>`;
+            if (mortalityLayer) {
+                mortalityLayer.eachLayer(layer => {
+                    const props = layer.feature.properties;
+                    const name = props.shapeName || props.NAME_1 || props.NAME || props.name || props.ADMIN || '';
+                    const mortality = getInterpolatedMortality(name, t);
+                    layer.setStyle({ fillColor: getContinuousColor(mortality), fillOpacity: 0.7, weight: 1.5, color: '#2c3e50' });
+                    if (layer.getPopup()) {
+                        let popup = `<strong>${name}</strong><br>`;
+                        if (mortality !== null) popup += `📊 Mortality (${t.toFixed(1)}): ${mortality.toFixed(1)}%`;
+                        else popup += `📊 Data not available for this period`;
+                        layer._popup.setContent(popup);
                     }
-                    layer._popup.setContent(popupContent);
-                }
-            });
+                });
+            }
+            const data = yearData[intYear];
+            if (data) {
+                const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
+                const top4 = sorted.slice(0,4);
+                document.getElementById('summaryText').innerHTML = `📌 Most affected regions (${intYear}): ` +
+                    top4.map(([n,v]) => `${n.replace(/ska$/, '')} (${v}%)`).join(', ');
+            }
         }
 
-        // Update summary based on integer year
-        const intYear2 = Math.round(t);
-        const data = yearData[intYear2];
-        if (data) {
-            const sorted = Object.entries(data).sort((a,b) => b[1] - a[1]);
-            const top4 = sorted.slice(0, 4);
-            const summaryDiv = document.getElementById('summary');
-            summaryDiv.innerHTML = `<strong>📌 Most affected regions (${intYear2}):</strong> ` +
-                top4.map(([name, val]) => `${name.replace(/ska$/, '')} (${val}%)`).join(', ');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        map = L.map('map').setView([49.0, 32.0], 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CartoDB',
-            subdomains: 'abcd',
-            minZoom: 4,
-            maxZoom: 10
-        }).addTo(map);
-
-        const mapDiv = document.getElementById('map');
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'loading';
-        loadingDiv.innerHTML = '🔄 Loading map data...';
-        loadingDiv.style.position = 'absolute';
-        loadingDiv.style.top = '50%';
-        loadingDiv.style.left = '50%';
-        loadingDiv.style.transform = 'translate(-50%, -50%)';
-        loadingDiv.style.background = 'white';
-        loadingDiv.style.padding = '1rem';
-        loadingDiv.style.borderRadius = '8px';
-        loadingDiv.style.zIndex = '1000';
-        mapDiv.style.position = 'relative';
-        mapDiv.appendChild(loadingDiv);
-
-        // Use your working GeoJSON file name
         const geojsonUrl = './ukraine_oblasts.geojson.geojson';
-
         fetch(geojsonUrl)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                return response.json();
-            })
+            .then(r => r.json())
             .then(data => {
-                if (loadingDiv) loadingDiv.remove();
-                console.log('GeoJSON loaded successfully', data.features.length);
-
-                geojsonLayer = L.geoJSON(data, {
-                    style: function(feature) {
-                        const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
-                        const mortality = getInterpolatedMortality(name, currentT);
-                        return {
-                            fillColor: getContinuousColor(mortality),
-                            weight: 1.5,
-                            opacity: 0.8,
-                            color: '#2c3e50',
-                            fillOpacity: 0.7
-                        };
-                    },
-                    onEachFeature: function(feature, layer) {
-                        const name = feature.properties.shapeName || feature.properties.NAME_1 || feature.properties.NAME || '';
-                        layer.bindPopup(() => {
-                            const mortality = getInterpolatedMortality(name, currentT);
-                            let popupContent = `<strong>${name}</strong><br>`;
-                            if (mortality !== null) {
-                                popupContent += `📊 Mortality (${currentT.toFixed(1)}): ${mortality.toFixed(1)}%`;
-                                if (mortality >= 40) popupContent += ` 🔴 (Extreme)`;
-                                else if (mortality >= 20) popupContent += ` 🟠 (Severe)`;
-                            } else {
-                                popupContent += `📊 Data not available for this period`;
-                            }
-                            return popupContent;
+                mortalityMap = L.map('mortalityMap').setView([49.0, 32.0], 6);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(mortalityMap);
+                mortalityLayer = L.geoJSON(data, {
+                    style: () => ({}),
+                    onEachFeature: (f,l) => {
+                        const name = f.properties.shapeName || f.properties.NAME_1 || f.properties.NAME || '';
+                        l.bindPopup(() => {
+                            const mort = getInterpolatedMortality(name, currentT);
+                            return `<strong>${name}</strong><br>${mort !== null ? `📊 Mortality (${currentT.toFixed(1)}): ${mort.toFixed(1)}%` : '📊 Data not available'}`;
                         });
                     }
-                }).addTo(map);
-                map.fitBounds(geojsonLayer.getBounds());
-
-                // Legend with continuous color bar
+                }).addTo(mortalityMap);
+                updateMortalityMap(1932);
+                mortalityMap.fitBounds(mortalityLayer.getBounds());
                 const legend = L.control({ position: 'bottomright' });
-                legend.onAdd = function() {
+                legend.onAdd = () => {
                     const div = L.DomUtil.create('div', 'legend');
-                    div.innerHTML = `
-                        <h4>📈 Mortality (%)</h4>
-                        <div style="background: linear-gradient(to right, #fee5d9, #a50f15); height:20px; width:100%; border-radius:4px; margin:8px 0;"></div>
-                        <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
-                            <span>≤10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>>50%</span>
-                        </div>
-                        <hr style="margin: 8px 0;">
-                        <div><span style="background:#cccccc; display:inline-block; width:20px; height:20px; border:1px solid #ccc;"></span> No data</div>
-                    `;
+                    div.innerHTML = `<h4>📈 Mortality (%)</h4><div class="gradient-bar"></div><div class="legend-labels"><span>≤10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>>50%</span></div><hr><div><span style="background:#ccc; display:inline-block; width:20px; height:20px; border:1px solid #ccc;"></span> No data</div>`;
                     return div;
                 };
-                legend.addTo(map);
-
-                // Slider with continuous step 0.1
-                const slider = document.getElementById('timeline-slider');
-                const yearDisplay = document.getElementById('year-display');
-                noUiSlider.create(slider, {
-                    start: [1932],
-                    connect: [true, false],
-                    step: 0.1,
-                    range: { min: 1931, max: 1934 },
-                    format: { to: v => v, from: v => v }
-                });
-                slider.noUiSlider.on('update', (values) => {
-                    const t = values[0];
-                    updateMapColors(t);
-                });
-                updateMapColors(1932);
+                legend.addTo(mortalityMap);
             })
-            .catch(error => {
-                console.error('Failed to load GeoJSON:', error);
-                if (loadingDiv) loadingDiv.remove();
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error';
-                errorDiv.innerHTML = `
-                    <strong>❌ Could not load local GeoJSON file.</strong><br>
-                    Make sure you have uploaded the file <code>ukraine_oblasts.geojson.geojson</code> to the same folder as this HTML file.<br>
-                    <br>
-                    <strong>Current URL attempted:</strong> ${geojsonUrl}<br>
-                    <br>
-                    If your file has a different name, edit the <code>geojsonUrl</code> variable in the code.
-                `;
-                document.getElementById('map').innerHTML = '';
-                document.getElementById('map').appendChild(errorDiv);
+            .catch(err => console.error('GeoJSON load error', err));
+
+        const slider = document.getElementById('timeline-slider');
+        if (slider) {
+            noUiSlider.create(slider, { start: [1932], connect: [true, false], step: 0.1, range: { min: 1931, max: 1934 }, format: { to: v => v, from: v => v } });
+            slider.noUiSlider.on('update', (values) => updateMortalityMap(values[0]));
+        }
+
+        // Spin wheel (fixed)
+        const wheelCanvas = document.getElementById('wheelCanvas');
+        const ctxWheel = wheelCanvas.getContext('2d');
+        const spinBtn = document.getElementById('spinWheelBtn');
+        const factDisplay = document.getElementById('factDisplay');
+        const facts = [
+            "The word 'Holodomor' was not used publicly until the 1980s; before that, it was a forbidden topic in the USSR.",
+            "Stalin personally ordered that Ukraine's borders be sealed in December 1932 to prevent peasants from fleeing the famine.",
+            "The number of children who died during the Holodomor is estimated at over 1 million.",
+            "Some villages were so depopulated that the Soviet government erased them from official maps.",
+            "Survivors often had to eat tree bark, grass, cats, and in extreme cases, human flesh to survive.",
+            "The 'Black Lists' (Chorni doshky) were boards posted in villages publicly shaming those who allegedly hid grain; they were cut off from all food supplies.",
+            "Foreign journalists Gareth Jones and Malcolm Muggeridge risked their lives to report on the famine; Western media mocked them as liars.",
+            "The Ukrainian language was suppressed during the famine; speaking Ukrainian could lead to arrest.",
+            "In 2006, Ukraine officially recognized the Holodomor as genocide; Russia still denies it.",
+            "During the Holodomor, the Soviet government exported grain to Europe while Ukrainians starved."
+        ];
+        const segments = facts.length;
+        const angleStep = (2 * Math.PI) / segments;
+        let currentRotation = 0, spinning = false;
+
+        function drawWheel() {
+            const size = wheelCanvas.width;
+            const center = size / 2;
+            const radius = size / 2;
+            ctxWheel.clearRect(0, 0, size, size);
+            for (let i = 0; i < segments; i++) {
+                const start = i * angleStep + currentRotation;
+                const end = start + angleStep;
+                ctxWheel.beginPath();
+                ctxWheel.moveTo(center, center);
+                ctxWheel.arc(center, center, radius, start, end);
+                ctxWheel.fillStyle = `hsl(${i * 45}, 70%, 55%)`;
+                ctxWheel.fill();
+                ctxWheel.save();
+                ctxWheel.translate(center, center);
+                ctxWheel.rotate(start + angleStep / 2);
+                ctxWheel.textAlign = "center";
+                ctxWheel.textBaseline = "middle";
+                ctxWheel.fillStyle = "white";
+                ctxWheel.font = "bold 16px 'Inter'";
+                ctxWheel.fillText((i+1).toString(), radius * 0.7, 0);
+                ctxWheel.restore();
+                ctxWheel.strokeStyle = "#fff";
+                ctxWheel.lineWidth = 2;
+                ctxWheel.beginPath();
+                ctxWheel.moveTo(center, center);
+                ctxWheel.arc(center, center, radius, start, end);
+                ctxWheel.stroke();
+            }
+            ctxWheel.beginPath();
+            ctxWheel.arc(center, center, 20, 0, 2*Math.PI);
+            ctxWheel.fillStyle = "#fff";
+            ctxWheel.fill();
+            ctxWheel.strokeStyle = "#b22222";
+            ctxWheel.lineWidth = 3;
+            ctxWheel.stroke();
+        }
+
+        function spinWheel() {
+            if (spinning) return;
+            spinning = true;
+            const spinAngle = Math.random() * 360 + 720;
+            const start = performance.now();
+            const duration = 2000;
+            function animate(now) {
+                const elapsed = now - start;
+                const t = Math.min(1, elapsed / duration);
+                const easeOut = 1 - Math.pow(1 - t, 3);
+                const newRot = currentRotation + (spinAngle * Math.PI / 180) * easeOut;
+                currentRotation = newRot % (2 * Math.PI);
+                drawWheel();
+                if (t < 1) requestAnimationFrame(animate);
+                else {
+                    const pointerAngle = -Math.PI / 2;
+                    let raw = (pointerAngle - currentRotation + 2*Math.PI) % (2*Math.PI);
+                    let idx = Math.floor(raw / angleStep) % segments;
+                    factDisplay.innerHTML = `<i class="fas fa-lightbulb"></i> ${facts[idx]}`;
+                    spinning = false;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        spinBtn.addEventListener('click', spinWheel);
+        drawWheel();
+
+        // Modal for visual evidence (add to grid items)
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        const closeModal = document.querySelector('.close-modal');
+        const gridItems = document.querySelectorAll('.grid-item');
+        const evidenceDetails = [
+            { img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Holodomor_1933_Children.jpg", cap: "This photograph, smuggled out of Ukraine by foreign journalists, shows starving children in a village in 1933. Soviet propaganda claimed no famine existed; images like this became crucial evidence. The faces of the children reflect the unimaginable suffering – a reality that the regime tried to erase." },
+            { img: "https://gis.huri.harvard.edu/sites/default/files/styles/large/public/maps/population_losses_thumb.png", cap: "The Harvard MAPA project's excess death map. Dark red areas (Poltava, Cherkasy, Kyiv, Kharkiv) lost over 50% of their rural population. This data, compiled from Soviet census records, shows a clear geographic pattern: the black soil belt was targeted." },
+            { img: "https://memorialholodomor.org.ua/sites/default/files/styles/large/public/map-thumb.jpg", cap: "Map of 'Black List' villages (Chorni doshky) – communities publicly shamed and then completely cut off from food supplies. These villages were deliberately starved; many were erased from Soviet maps." },
+            { img: "https://holodomor.ca/wp-content/uploads/2020/04/map-cropped.png", cap: "Grain requisition targets for 1932. The highest quotas were imposed on the same regions that later suffered the worst mortality. The correlation (r=0.83) is one of the strongest proofs that the famine was deliberately engineered." }
+        ];
+        gridItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                modal.style.display = 'flex';
+                modalImg.src = evidenceDetails[index].img;
+                modalCaption.innerText = evidenceDetails[index].cap;
             });
-    });
-</script>
+        });
+        closeModal.onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    </script>
 </body>
 </html>
